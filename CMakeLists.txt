@@ -165,7 +165,8 @@ if (ENABLE_SHARED)
 endif()
 
 set(_bitprim_proto
-  proto/bitcoin/protocol/interface.proto)
+  proto/bitcoin/protocol/interface.proto
+  proto/bitcoin/protocol/consensus.proto)
 set(_proto_outdir "${CMAKE_CURRENT_BINARY_DIR}/proto")
 foreach (_proto ${_bitprim_proto})
   get_filename_component(_proto_we ${_proto} NAME_WE)
