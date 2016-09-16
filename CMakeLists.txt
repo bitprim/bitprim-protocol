@@ -198,6 +198,7 @@ add_library(bitprim-protocol ${MODE}
   src/converter.cpp
   src/packet.cpp
   src/request_packet.cpp
+  src/requester.cpp
   src/response_packet.cpp
   src/zmq/authenticator.cpp
   src/zmq/certificate.cpp
@@ -303,6 +304,7 @@ set(_bitprim_headers
   bitcoin/protocol/packet.hpp
   bitcoin/protocol/primitives.hpp
   bitcoin/protocol/request_packet.hpp
+  bitcoin/protocol/requester.hpp
   bitcoin/protocol/response_packet.hpp
   bitcoin/protocol/version.hpp
   # include_bitcoin_protocol_zmq_HEADERS =

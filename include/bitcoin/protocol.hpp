@@ -21,6 +21,7 @@
 #include <bitcoin/protocol/packet.hpp>
 #include <bitcoin/protocol/primitives.hpp>
 #include <bitcoin/protocol/request_packet.hpp>
+#include <bitcoin/protocol/requester.hpp>
 #include <bitcoin/protocol/response_packet.hpp>
 #include <bitcoin/protocol/version.hpp>
 #include <bitcoin/protocol/zmq/authenticator.hpp>
