@@ -16,6 +16,8 @@ namespace protocol {
 class BCP_API requester
 {
 public:
+    requester(zmq::context& context);
+
     requester(zmq::context& context, const config::endpoint& address);
 
     requester(const requester&) = delete;
@@ -23,12 +25,14 @@ public:
 
     ~requester();
 
+    operator const bool() const;
+
+    code connect(const config::endpoint& address);
+
     code send(const google::protobuf::MessageLite& request,
         google::protobuf::MessageLite& reply);
 
 private:
-    code connect(zmq::context& context, const config::endpoint& address);
-
     code send_recv(const google::protobuf::MessageLite& request,
         google::protobuf::MessageLite& reply);
 
