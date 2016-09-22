@@ -166,6 +166,7 @@ endif()
 
 set(_bitprim_proto
   proto/bitcoin/protocol/interface.proto
+  proto/bitcoin/protocol/blockchain.proto
   proto/bitcoin/protocol/consensus.proto)
 set(_proto_outdir "${CMAKE_CURRENT_BINARY_DIR}/proto")
 foreach (_proto ${_bitprim_proto})

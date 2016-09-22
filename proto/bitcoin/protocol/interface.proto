@@ -240,3 +240,5 @@ message response {
     }
 }
 
+//
+message void_reply {}

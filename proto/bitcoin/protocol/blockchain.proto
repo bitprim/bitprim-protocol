@@ -1,0 +1,540 @@
+syntax = "proto3";
+
+import "interface.proto";
+
+package libbitcoin.protocol.blockchain;
+
+//! bool block_chain_impl::start();
+message start_request {
+}
+
+message start_reply {
+  bool result = 1;
+}
+
+//! bool block_chain_impl::stop();
+message stop_request {
+}
+
+message stop_reply {
+  bool result = 1;
+}
+
+//! bool block_chain_impl::close();
+message close_request {
+}
+
+message close_reply {
+  bool result = 1;
+}
+
+//! bool block_chain_impl::get_gap_range(uint64_t& out_first, uint64_t& out_last) const;
+message get_gap_range_request {
+}
+
+message get_gap_range_reply {
+  bool result = 1;
+  uint64 out_first = 2;
+  uint64 out_last = 3;
+}
+
+//! bool block_chain_impl::get_next_gap(uint64_t& out_height, uint64_t start_height) const;
+message get_next_gap_request {
+  uint64 start_height = 1;
+}
+
+message get_next_gap_reply {
+  bool result = 1;
+  uint64 out_height = 2;
+}
+
+//! bool block_chain_impl::get_difficulty(hash_number& out_difficulty, uint64_t height) const;
+message get_difficulty_request {
+  uint64 height = 1;
+}
+
+message get_difficulty_reply {
+  bool result = 1;
+  bytes out_difficulty = 2;
+}
+
+//! bool block_chain_impl::get_header(chain::header& out_header, uint64_t height) const;
+message get_header_request {
+  uint64 height = 1;
+}
+
+message get_header_reply {
+  bool result = 1;
+  block_header out_header = 2;
+}
+
+//! bool block_chain_impl::get_height(uint64_t& out_height, const hash_digest& block_hash) const;
+message get_height_request {
+  bytes block_hash = 1;
+}
+
+message get_height_reply {
+  bool result = 1;
+  uint64 out_height = 2;
+}
+
+//! bool block_chain_impl::get_last_height(uint64_t& out_height) const;
+message get_last_height_request {
+}
+
+message get_last_height_reply {
+  bool result = 1;
+  uint64 out_height = 2;
+}
+
+//! bool block_chain_impl::get_outpoint_transaction(hash_digest& out_transaction_hash,
+//!     const chain::output_point& outpoint) const;
+message get_outpoint_transaction_request {
+  point outpoint = 1;
+}
+
+message get_outpoint_transaction_reply {
+  bool result = 1;
+  bytes out_transaction_hash = 2;
+}
+
+//! bool block_chain_impl::get_transaction(chain::transaction& out_transaction,
+//!     uint64_t& out_block_height, const hash_digest& transaction_hash) const;
+message get_transaction_request {
+  bytes transaction_hash = 1;
+}
+
+message get_transaction_reply {
+  bool result = 1;
+  tx out_transaction= 2;
+  uint64 out_block_height = 3;
+}
+
+//! bool block_chain_impl::get_transaction_height(uint64_t& out_block_height,
+//!     const hash_digest& transaction_hash) const;
+message get_transaction_height_request {
+  bytes transaction_hash = 1;
+}
+
+message get_transaction_height_reply {
+  bool result = 1;
+  uint64 out_block_height = 2;
+}
+
+//! bool block_chain_impl::import(chain::block::ptr block, uint64_t height);
+message import_request {
+  block block = 1;
+  uint64 height = 2;
+}
+
+message import_reply {
+  bool result = 1;
+}
+
+//! bool block_chain_impl::push(block_detail::ptr block);
+message push_request {
+  message block_detail {
+    block actual = 1;
+    uint64 originator = 2;
+    int32 error = 3;
+    bool processed = 4;
+    uint64 height = 5;
+  }
+
+  block_detail block = 1;
+}
+
+message push_reply {
+  bool result = 1;
+}
+
+//! bool block_chain_impl::pop_from(block_detail::list& out_blocks, uint64_t height);
+message pop_from_request {
+  uint64 height = 1;
+}
+
+message pop_from_reply {
+  message block_detail {
+    block actual = 1;
+    uint64 originator = 2;
+    int32 error = 3;
+    bool processed = 4;
+    uint64 height = 5;
+  }
+
+  bool result = 1;
+  repeated block_detail out_blocks = 2;
+}
+
+//! void block_chain_impl::store(message::block_message::ptr block,
+//!     block_store_handler handler);
+message store_request {
+  block actual = 1;
+  uint64 originator = 2;
+  string handler = 3;
+}
+
+message store_handler {
+  int32 error = 1;
+  uint64 height = 2;
+}
+
+//! void block_chain_impl::fetch_block(uint64_t height, block_fetch_handler handler);
+//! void block_chain_impl::fetch_block(const hash_digest& hash, block_fetch_handler handler);
+message fetch_block_request {
+  bytes hash = 1;
+  uint64 height = 2;
+  string handler = 3;
+}
+
+message fetch_block_handler {
+  int32 error = 1;
+  block block = 2;
+}
+
+//! void block_chain_impl::fetch_block_header(uint64_t height,
+//!     block_header_fetch_handler handler);
+//! void block_chain_impl::fetch_block_header(const hash_digest& hash,
+//!     block_header_fetch_handler handler);
+message fetch_block_header_request {
+  bytes hash = 1;
+  uint64 height = 2;
+  string handler = 3;
+}
+
+message fetch_block_header_handler {
+  int32 error = 1;
+  block_header header = 2;
+}
+
+//! void block_chain_impl::fetch_merkle_block(uint64_t height,
+//!     merkle_block_fetch_handler handler);
+//! void block_chain_impl::fetch_merkle_block(const hash_digest& hash,
+//!     merkle_block_fetch_handler handler);
+message fetch_merkle_block_request {
+  bytes hash = 1;
+  uint64 height = 2;
+  string handler = 3;
+}
+
+message fetch_merkle_block_handler {
+  message merkle_block {
+    block_header header = 1;
+    repeated bytes hashes = 2;
+    bytes flags = 3;
+  }
+
+  int32 error = 1;
+  merkle_block block = 2;
+}
+
+//! void block_chain_impl::fetch_block_transaction_hashes(uint64_t height,
+//!     transaction_hashes_fetch_handler handler);
+//! void block_chain_impl::fetch_block_transaction_hashes(const hash_digest& hash,
+//!     transaction_hashes_fetch_handler handler);
+message fetch_block_transaction_hashes_request {
+  bytes hash = 1;
+  uint64 height = 2;
+  string handler = 3;
+}
+
+message fetch_block_transaction_hashes_handler {
+  int32 error = 1;
+  repeated bytes hashes = 2;
+}
+
+//! void block_chain_impl::fetch_block_locator(block_locator_fetch_handler handler);
+message fetch_block_locator_request {
+  string handler = 1;
+}
+
+message fetch_block_locator_handler {
+  int32 error = 1;
+  repeated bytes locator = 2;
+}
+
+//! void block_chain_impl::fetch_locator_block_hashes(const message::get_blocks& locator,
+//!     const hash_digest& threshold, size_t limit,
+//!     locator_block_hashes_fetch_handler handler);
+message fetch_locator_block_hashes_request {
+  message get_blocks {
+    repeated bytes start_hashes = 1;
+    bytes stop_hash = 2;
+  }
+
+  get_blocks locator = 1;
+  bytes threshold = 2;
+  uint64 limit = 3;
+  string handler = 4;
+}
+
+message fetch_locator_block_hashes_handler {
+  int32 error = 1;
+  repeated bytes hashes = 2;
+}
+
+//! void block_chain_impl::fetch_locator_block_headers(const message::get_headers& locator,
+//!     const hash_digest& threshold, size_t limit,
+//!     locator_block_headers_fetch_handler handler);
+message fetch_locator_block_headers_request {
+  message get_headers {
+    repeated bytes start_hashes = 1;
+    bytes stop_hash = 2;
+  }
+
+  get_headers locator = 1;
+  bytes threshold = 2;
+  uint64 limit = 3;
+  string handler = 4;
+}
+
+message fetch_locator_block_headers_handler {
+  int32 error = 1;
+  repeated block_header headers = 2;
+}
+
+//! void block_chain_impl::fetch_block_height(const hash_digest& hash,
+//!     block_height_fetch_handler handler);
+message fetch_block_height_request {
+  bytes hash = 1;
+  string handler = 2;
+}
+
+message fetch_block_height_handler {
+  int32 error = 1;
+  uint64 height = 2;
+}
+
+//! void block_chain_impl::fetch_last_height(last_height_fetch_handler handler);
+message fetch_last_height_request {
+  string handler = 1;
+}
+
+message fetch_last_height_handler {
+  int32 error = 1;
+  uint64 height = 2;
+}
+
+//! void block_chain_impl::fetch_transaction(const hash_digest& hash,
+//!     transaction_fetch_handler handler);
+message fetch_transaction_request {
+  bytes hash = 1;
+  string handler = 2;
+}
+
+message fetch_transaction_handler {
+  int32 error = 1;
+  tx transaction = 2;
+}
+
+//! void block_chain_impl::fetch_transaction_index(const hash_digest& hash,
+//!     transaction_index_fetch_handler handler);
+message fetch_transaction_index_request {
+  bytes hash = 1;
+  string handler = 2;
+}
+
+message fetch_transaction_index_handler {
+  int32 error = 1;
+  uint64 height = 2;
+  uint64 index = 3;
+}
+
+//! void block_chain_impl::fetch_spend(const chain::output_point& outpoint,
+//!     spend_fetch_handler handler);
+message fetch_spend_request {
+  point outpoint = 1;
+  string handler = 2;
+}
+
+message fetch_spend_handler {
+  int32 error = 1;
+  point point = 2;
+}
+
+//! void block_chain_impl::fetch_history(const wallet::payment_address& address,
+//!     uint64_t limit, uint64_t from_height, history_fetch_handler handler);
+message fetch_history_request {
+  message payment_address {
+    bool valid = 1;
+    uint32 version = 2;
+    bytes hash = 3;
+  }
+
+  payment_address address = 1;
+  uint64 limit = 2;
+  uint64 from_height = 3;
+  string handler = 4;
+}
+
+message fetch_history_handler {
+  message history_compact {
+    uint32 kind = 1;
+    point point = 2;
+    uint64 height = 3;
+    uint64 value = 4;
+  }
+
+  int32 error = 1;
+  repeated history_compact history = 2;
+}
+
+//! void block_chain_impl::fetch_stealth(const binary& filter, uint64_t from_height,
+//!     stealth_fetch_handler handler);
+message fetch_stealth_request {
+  uint64 filter_size = 1;
+  bytes filter_blocks = 2;
+  uint64 from_height = 3;
+  string handler = 4;
+}
+
+message fetch_stealth_handler {
+  message stealth_compact {
+    bytes ephemeral_public_key_hash = 1;
+    bytes public_key_hash = 2;
+    bytes transaction_hash = 3;
+  }
+
+  int32 error = 1;
+  repeated stealth_compact stealth = 2;
+}
+
+//! void block_chain_impl::filter_blocks(message::get_data::ptr message,
+//!     result_handler handler);
+message filter_blocks_request {
+  message inventory_vector {
+    int32 type = 1;
+    bytes hash = 2;
+  }
+
+  repeated inventory_vector message = 1;
+  string handler = 2;
+}
+
+message filter_blocks_handler {
+  int32 error = 1;
+}
+
+//! void block_chain_impl::filter_orphans(message::get_data::ptr message,
+//!     result_handler handler);
+message filter_orphans_request {
+  message inventory_vector {
+    int32 type = 1;
+    bytes hash = 2;
+  }
+
+  repeated inventory_vector message = 1;
+  string handler = 2;
+}
+
+message filter_orphans_handler {
+  int32 error = 1;
+}
+
+//! void block_chain_impl::filter_transactions(message::get_data::ptr message,
+//!     result_handler handler);
+message filter_transactions_request {
+  message inventory_vector {
+    int32 type = 1;
+    bytes hash = 2;
+  }
+
+  repeated inventory_vector message = 1;
+  string handler = 2;
+}
+
+message filter_transactions_handler {
+  int32 error = 1;
+}
+
+//! void block_chain_impl::subscribe_reorganize(reorganize_handler handler);
+message subscribe_reorganize_request {
+  string handler = 1;
+}
+
+message subscribe_reorganize_handler {
+  message block_message {
+    block actual = 1;
+    uint64 originator = 2;
+  }
+
+  int32 error = 1;
+  uint64 fork_point = 2;
+  repeated block_message new_blocks = 3;
+  repeated block_message replaced_blocks = 4;
+}
+
+//!
+message request {
+  oneof request_type {
+    // transaction_pool::request pool = 1;
+
+    start_request start = 2;
+
+    stop_request stop = 3;
+
+    close_request close = 4;
+
+    get_gap_range_request get_gap_range = 5;
+
+    get_next_gap_request get_next_gap = 6;
+
+    get_difficulty_request get_difficulty = 7;
+
+    get_header_request get_header = 8;
+
+    get_height_request get_height = 9;
+
+    get_last_height_request get_last_height = 10;
+
+    get_outpoint_transaction_request get_outpoint_transaction = 11;
+
+    get_transaction_request get_transaction = 12;
+
+    get_transaction_height_request get_transaction_height = 13;
+
+    import_request import = 14;
+
+    push_request push = 15;
+
+    pop_from_request pop_from = 16;
+
+    store_request store = 17;
+
+    fetch_block_request fetch_block = 18;
+
+    fetch_block_header_request fetch_block_header = 19;
+
+    fetch_merkle_block_request fetch_merkle_block = 20;
+
+    fetch_block_transaction_hashes_request fetch_block_transaction_hashes = 21;
+
+    fetch_block_locator_request fetch_block_locator = 22;
+
+    fetch_locator_block_hashes_request fetch_locator_block_hashes = 23;
+
+    fetch_locator_block_headers_request fetch_locator_block_headers = 24;
+
+    fetch_block_height_request fetch_block_height = 25;
+
+    fetch_last_height_request fetch_last_height = 26;
+
+    fetch_transaction_request fetch_transaction = 27;
+
+    fetch_transaction_index_request fetch_transaction_index = 28;
+
+    fetch_spend_request fetch_spend = 29;
+
+    fetch_history_request fetch_history = 30;
+
+    fetch_stealth_request fetch_stealth = 31;
+
+    filter_blocks_request filter_blocks = 32;
+
+    filter_orphans_request filter_orphans = 33;
+
+    filter_transactions_request filter_transactions = 34;
+
+    subscribe_reorganize_request subscribe_reorganize = 35;
+  }
+}

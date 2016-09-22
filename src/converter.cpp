@@ -45,6 +45,40 @@ static std::string pack_hash(hash_digest in)
     return std::string(in.begin(), in.end());
 }
 
+bool converter::from_protocol(const std::string* hash,
+    hash_digest& result)
+{
+    if (hash == nullptr)
+        return false;
+
+    return unpack_hash(result, *hash);
+}
+
+bool converter::from_protocol(const std::shared_ptr<std::string> hash,
+    hash_digest& result)
+{
+    return from_protocol(hash.get(), result);
+}
+
+bool converter::from_protocol(const std::string* hash,
+    short_hash& result)
+{
+    if (hash == nullptr)
+        return false;
+
+    if (hash->size() != short_hash_size)
+        return false;
+
+    std::copy(hash->begin(), hash->end(), result.begin());
+    return true;
+}
+
+bool converter::from_protocol(const std::shared_ptr<std::string> hash,
+    short_hash& result)
+{
+    return from_protocol(hash.get(), result);
+}
+
 bool converter::from_protocol(const point* point, chain::output_point& result)
 {
     if (point == nullptr)
@@ -212,6 +246,38 @@ bool converter::from_protocol(const std::shared_ptr<block> block,
     chain::block& result)
 {
     return from_protocol(block.get(), result);
+}
+
+bool converter::to_protocol(const hash_digest& hash, std::string& result)
+{
+    result = pack_hash(hash);
+    return true;
+}
+
+std::string* converter::to_protocol(const hash_digest& hash)
+{
+    std::unique_ptr<std::string> result(new std::string());
+
+    if (!to_protocol(hash, *(result.get())))
+        result.reset();
+
+    return result.release();
+}
+
+bool converter::to_protocol(const short_hash& hash, std::string& result)
+{
+    result = std::string(hash.begin(), hash.end());
+    return true;
+}
+
+std::string* converter::to_protocol(const short_hash& hash)
+{
+    std::unique_ptr<std::string> result(new std::string());
+
+    if (!to_protocol(hash, *(result.get())))
+        result.reset();
+
+    return result.release();
 }
 
 bool converter::to_protocol(const chain::output_point& point,
