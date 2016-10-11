@@ -198,6 +198,7 @@ endforeach()
 add_library(bitprim-protocol ${MODE}
   src/converter.cpp
   src/packet.cpp
+  src/replier.cpp
   src/request_packet.cpp
   src/requester.cpp
   src/response_packet.cpp
@@ -304,6 +305,7 @@ set(_bitprim_headers
   bitcoin/protocol/define.hpp
   bitcoin/protocol/packet.hpp
   bitcoin/protocol/primitives.hpp
+  bitcoin/protocol/replier.hpp
   bitcoin/protocol/request_packet.hpp
   bitcoin/protocol/requester.hpp
   bitcoin/protocol/response_packet.hpp

@@ -20,6 +20,7 @@
 #include <bitcoin/protocol/interface.pb.h>
 #include <bitcoin/protocol/packet.hpp>
 #include <bitcoin/protocol/primitives.hpp>
+#include <bitcoin/protocol/replier.hpp>
 #include <bitcoin/protocol/request_packet.hpp>
 #include <bitcoin/protocol/requester.hpp>
 #include <bitcoin/protocol/response_packet.hpp>

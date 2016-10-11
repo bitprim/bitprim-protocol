@@ -97,6 +97,10 @@ public:
     code connect(const config::endpoint& address);
 
     /// This must be called on the socket thread.
+    /// Retrieve the last endpoint set.
+    bool get_last_endpoint(std::string& endpoint) const;
+
+    /// This must be called on the socket thread.
     /// Sets the domain for ZAP (ZMQ RFC 27) authentication.
     bool set_authentication_domain(const std::string& domain);
 
