@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "interface.proto";
+import "transaction_pool.proto";
 
 package libbitcoin.protocol.blockchain;
 
@@ -467,7 +468,7 @@ message subscribe_reorganize_handler {
 //!
 message request {
   oneof request_type {
-    // transaction_pool::request pool = 1;
+    transaction_pool.request pool = 1;
 
     start_request start = 2;
 
