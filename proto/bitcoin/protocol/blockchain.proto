@@ -1,11 +1,15 @@
 syntax = "proto3";
 
 import "interface.proto";
-import "transaction_pool.proto";
 
 package libbitcoin.protocol.blockchain;
 
-//! bool block_chain_impl::start();
+
+//# Startup and shutdown.
+// ----------------------------------------------------------------------------
+
+/// Start or restart the blockchain.
+//! bool start();
 message start_request {
 }
 
@@ -13,7 +17,17 @@ message start_reply {
   bool result = 1;
 }
 
-//! bool block_chain_impl::stop();
+/// Start the orphan pool and the transaction pool.
+//! bool start_pools();
+message start_pools_request {
+}
+
+message start_pools_reply {
+  bool result = 1;
+}
+
+/// Optional signal work stop, speeds shutdown with multiple threads.
+//! bool stop();
 message stop_request {
 }
 
@@ -21,7 +35,8 @@ message stop_reply {
   bool result = 1;
 }
 
-//! bool block_chain_impl::close();
+/// Unmaps all memory and frees the database file handles.
+//! bool close();
 message close_request {
 }
 
@@ -29,37 +44,43 @@ message close_reply {
   bool result = 1;
 }
 
-//! bool block_chain_impl::get_gap_range(uint64_t& out_first, uint64_t& out_last) const;
-message get_gap_range_request {
+//# Readers.
+// ----------------------------------------------------------------------------
+
+/// Get the set of block gaps in the chain.
+//! bool get_gaps(database::block_database::heights& out_gaps) const;
+message get_gaps_request {
 }
 
-message get_gap_range_reply {
+message get_gaps_reply {
   bool result = 1;
-  uint64 out_first = 2;
-  uint64 out_last = 3;
+  repeated uint64 out_gaps = 2;
 }
 
-//! bool block_chain_impl::get_next_gap(uint64_t& out_height, uint64_t start_height) const;
-message get_next_gap_request {
-  uint64 start_height = 1;
+/// Get a determination of whether the block hash exists in the store.
+//! bool get_block_exists(const hash_digest& block_hash) const;
+message get_block_exists_request {
+  bytes block_hash = 1;
 }
 
-message get_next_gap_reply {
+message get_block_exists_reply {
   bool result = 1;
-  uint64 out_height = 2;
 }
 
-//! bool block_chain_impl::get_difficulty(hash_number& out_difficulty, uint64_t height) const;
-message get_difficulty_request {
+/// Get the difficulty of the fork starting at the given height.
+//! bool get_fork_difficulty(hash_number& out_difficulty,
+//!     uint64_t height) const;
+message get_fork_difficulty_request {
   uint64 height = 1;
 }
 
-message get_difficulty_reply {
+message get_fork_difficulty_reply {
   bool result = 1;
   bytes out_difficulty = 2;
 }
 
-//! bool block_chain_impl::get_header(chain::header& out_header, uint64_t height) const;
+/// Get the header of the block at the given height.
+//! bool get_header(chain::header& out_header, uint64_t height) const;
 message get_header_request {
   uint64 height = 1;
 }
@@ -69,7 +90,8 @@ message get_header_reply {
   block_header out_header = 2;
 }
 
-//! bool block_chain_impl::get_height(uint64_t& out_height, const hash_digest& block_hash) const;
+/// Get the height of the block with the given hash.
+//! bool get_height(size_t& out_height, const hash_digest& block_hash) const;
 message get_height_request {
   bytes block_hash = 1;
 }
@@ -79,7 +101,41 @@ message get_height_reply {
   uint64 out_height = 2;
 }
 
-//! bool block_chain_impl::get_last_height(uint64_t& out_height) const;
+/// Get the bits of the block with the given height.
+//! bool get_bits(uint32_t& out_bits, const size_t& height) const;
+message get_bits_request {
+  uint64 height = 1;
+}
+
+message get_bits_reply {
+  bool result = 1;
+  uint32 out_bits = 2;
+}
+
+/// Get the timestamp of the block with the given height.
+//! bool get_timestamp(uint32_t& out_timestamp, const size_t& height) const;
+message get_timestamp_request {
+  uint64 height = 1;
+}
+
+message get_timestamp_reply {
+  bool result = 1;
+  uint32 out_timestamp = 2;
+}
+
+/// Get the version of the block with the given height.
+//! bool get_version(uint32_t& out_version, const size_t& height) const;
+message get_version_request {
+  uint64 height = 1;
+}
+
+message get_version_reply {
+  bool result = 1;
+  uint32 out_version = 2;
+}
+
+/// Get height of latest block.
+//! bool get_last_height(size_t& out_height) const;
 message get_last_height_request {
 }
 
@@ -88,100 +144,131 @@ message get_last_height_reply {
   uint64 out_height = 2;
 }
 
-//! bool block_chain_impl::get_outpoint_transaction(hash_digest& out_transaction_hash,
-//!     const chain::output_point& outpoint) const;
-message get_outpoint_transaction_request {
+/// Get the output that is referenced by the outpoint.
+//! bool get_output(chain::output& out_output, size_t& out_height,
+//!     size_t& out_position, const chain::output_point& outpoint,
+//!     size_t fork_height) const;
+message get_output_request {
   point outpoint = 1;
+  uint64 fork_height = 2;
 }
 
-message get_outpoint_transaction_reply {
+message get_output_reply {
   bool result = 1;
-  bytes out_transaction_hash = 2;
+  tx_output out_output = 2;
+  uint64 out_height = 3;
+  uint64 out_position = 4;
 }
 
-//! bool block_chain_impl::get_transaction(chain::transaction& out_transaction,
-//!     uint64_t& out_block_height, const hash_digest& transaction_hash) const;
+/// Determine if an unspent transaction exists with the given hash.
+//! bool get_is_unspent_transaction(const hash_digest& hash,
+//!     size_t fork_height) const;
+message get_is_unspent_transaction_request {
+  bytes transaction_hash = 1;
+  uint64 fork_height = 2;
+}
+
+message get_is_unspent_transaction_reply {
+  bool result = 1;
+}
+
+/// Get the transaction of the given hash and its block height.
+//! transaction_ptr get_transaction(size_t& out_block_height,
+//!     const hash_digest& hash) const;
 message get_transaction_request {
   bytes transaction_hash = 1;
 }
 
 message get_transaction_reply {
-  bool result = 1;
-  tx out_transaction= 2;
-  uint64 out_block_height = 3;
-}
-
-//! bool block_chain_impl::get_transaction_height(uint64_t& out_block_height,
-//!     const hash_digest& transaction_hash) const;
-message get_transaction_height_request {
-  bytes transaction_hash = 1;
-}
-
-message get_transaction_height_reply {
-  bool result = 1;
+  tx result = 1;
   uint64 out_block_height = 2;
 }
 
-//! bool block_chain_impl::import(chain::block::ptr block, uint64_t height);
-message import_request {
-  block block = 1;
-  uint64 height = 2;
+//# Writers.
+// ----------------------------------------------------------------------------
+
+
+
+/// Set the flush lock scope (for use only with insert).
+//! bool begin_writes();
+message begin_writes_request {
 }
 
-message import_reply {
+message begin_writes_reply {
   bool result = 1;
 }
 
-//! bool block_chain_impl::push(block_detail::ptr block);
-message push_request {
-  message block_detail {
-    block actual = 1;
-    uint64 originator = 2;
-    int32 error = 3;
-    bool processed = 4;
-    uint64 height = 5;
-  }
+/// Reset the flush lock scope (for use only with insert).
+//! bool end_writes();
+message end_writes_request {
+}
 
-  block_detail block = 1;
+message end_writes_reply {
+  bool result = 1;
+}
+
+/// Insert a block to the blockchain, height is checked for existence.
+//! bool insert(block_const_ptr block, uint64_t height, bool flush);
+message insert_request {
+  block block = 1;
+  uint64 height = 2;
+  bool flush = 3;
+}
+
+message insert_reply {
+  bool result = 1;
+}
+
+/// Append the blocks to the top of the chain, height is validated.
+//! bool push(const block_const_ptr_list& block, uint64_t height, bool flush);
+message push_request {
+  repeated block blocks = 1;
+  uint64 height = 2;
+  bool flush = 3;
 }
 
 message push_reply {
   bool result = 1;
 }
 
-//! bool block_chain_impl::pop_from(block_detail::list& out_blocks, uint64_t height);
-message pop_from_request {
-  uint64 height = 1;
+/// Remove blocks from above the given hash, returning them in order.
+//! bool pop(block_const_ptr_list& out_blocks, const hash_digest& fork_hash,
+//!     bool flush);
+message pop_request {
+  bytes fork_hash = 1;
+  bool flush = 2;
 }
 
-message pop_from_reply {
-  message block_detail {
-    block actual = 1;
-    uint64 originator = 2;
-    int32 error = 3;
-    bool processed = 4;
-    uint64 height = 5;
-  }
-
+message pop_reply {
   bool result = 1;
-  repeated block_detail out_blocks = 2;
+  repeated block out_blocks = 2;
 }
 
-//! void block_chain_impl::store(message::block_message::ptr block,
-//!     block_store_handler handler);
-message store_request {
-  block actual = 1;
-  uint64 originator = 2;
-  string handler = 3;
+/// Swap incoming and outgoing blocks, height is validated.
+//! bool swap(block_const_ptr_list& out_blocks,
+//!     const block_const_ptr_list& in_blocks, size_t fork_height,
+//!     const hash_digest& fork_hash, bool flush);
+message swap_request {
+  repeated block in_blocks = 1;
+  uint64 fork_height = 2;
+  bytes fork_hash = 3;
+  bool flush = 4;
 }
 
-message store_handler {
-  int32 error = 1;
-  uint64 height = 2;
+message swap_reply {
+  bool result = 1;
+  repeated block out_blocks = 2;
 }
 
-//! void block_chain_impl::fetch_block(uint64_t height, block_fetch_handler handler);
-//! void block_chain_impl::fetch_block(const hash_digest& hash, block_fetch_handler handler);
+//# Queries.
+// ----------------------------------------------------------------------------
+
+/// fetch a block by height.
+//! void fetch_block(uint64_t height,
+//!     block_fetch_handler handler) const;
+/// fetch a block by hash.
+//! void fetch_block(const hash_digest& hash,
+//!     block_fetch_handler handler) const;
 message fetch_block_request {
   bytes hash = 1;
   uint64 height = 2;
@@ -191,12 +278,15 @@ message fetch_block_request {
 message fetch_block_handler {
   int32 error = 1;
   block block = 2;
+  uint64 height = 3;
 }
 
-//! void block_chain_impl::fetch_block_header(uint64_t height,
-//!     block_header_fetch_handler handler);
-//! void block_chain_impl::fetch_block_header(const hash_digest& hash,
-//!     block_header_fetch_handler handler);
+/// fetch block header by height.
+//! void fetch_block_header(uint64_t height,
+//!     block_header_fetch_handler handler) const;
+/// fetch block header by hash.
+//! void fetch_block_header(const hash_digest& hash,
+//!     block_header_fetch_handler handler) const;
 message fetch_block_header_request {
   bytes hash = 1;
   uint64 height = 2;
@@ -206,12 +296,15 @@ message fetch_block_header_request {
 message fetch_block_header_handler {
   int32 error = 1;
   block_header header = 2;
+  uint64 height = 3;
 }
 
-//! void block_chain_impl::fetch_merkle_block(uint64_t height,
-//!     merkle_block_fetch_handler handler);
-//! void block_chain_impl::fetch_merkle_block(const hash_digest& hash,
-//!     merkle_block_fetch_handler handler);
+/// fetch hashes of transactions for a block, by block height.
+//! void fetch_merkle_block(uint64_t height,
+//!     transaction_hashes_fetch_handler handler) const;
+/// fetch hashes of transactions for a block, by block hash.
+//! void fetch_merkle_block(const hash_digest& hash,
+//!     transaction_hashes_fetch_handler handler) const;
 message fetch_merkle_block_request {
   bytes hash = 1;
   uint64 height = 2;
@@ -227,75 +320,12 @@ message fetch_merkle_block_handler {
 
   int32 error = 1;
   merkle_block block = 2;
+  uint64 height = 3;
 }
 
-//! void block_chain_impl::fetch_block_transaction_hashes(uint64_t height,
-//!     transaction_hashes_fetch_handler handler);
-//! void block_chain_impl::fetch_block_transaction_hashes(const hash_digest& hash,
-//!     transaction_hashes_fetch_handler handler);
-message fetch_block_transaction_hashes_request {
-  bytes hash = 1;
-  uint64 height = 2;
-  string handler = 3;
-}
-
-message fetch_block_transaction_hashes_handler {
-  int32 error = 1;
-  repeated bytes hashes = 2;
-}
-
-//! void block_chain_impl::fetch_block_locator(block_locator_fetch_handler handler);
-message fetch_block_locator_request {
-  string handler = 1;
-}
-
-message fetch_block_locator_handler {
-  int32 error = 1;
-  repeated bytes locator = 2;
-}
-
-//! void block_chain_impl::fetch_locator_block_hashes(const message::get_blocks& locator,
-//!     const hash_digest& threshold, size_t limit,
-//!     locator_block_hashes_fetch_handler handler);
-message fetch_locator_block_hashes_request {
-  message get_blocks {
-    repeated bytes start_hashes = 1;
-    bytes stop_hash = 2;
-  }
-
-  get_blocks locator = 1;
-  bytes threshold = 2;
-  uint64 limit = 3;
-  string handler = 4;
-}
-
-message fetch_locator_block_hashes_handler {
-  int32 error = 1;
-  repeated bytes hashes = 2;
-}
-
-//! void block_chain_impl::fetch_locator_block_headers(const message::get_headers& locator,
-//!     const hash_digest& threshold, size_t limit,
-//!     locator_block_headers_fetch_handler handler);
-message fetch_locator_block_headers_request {
-  message get_headers {
-    repeated bytes start_hashes = 1;
-    bytes stop_hash = 2;
-  }
-
-  get_headers locator = 1;
-  bytes threshold = 2;
-  uint64 limit = 3;
-  string handler = 4;
-}
-
-message fetch_locator_block_headers_handler {
-  int32 error = 1;
-  repeated block_header headers = 2;
-}
-
-//! void block_chain_impl::fetch_block_height(const hash_digest& hash,
-//!     block_height_fetch_handler handler);
+/// fetch height of block by hash.
+//! void fetch_block_height(const hash_digest& hash,
+//!     block_height_fetch_handler handler) const;
 message fetch_block_height_request {
   bytes hash = 1;
   string handler = 2;
@@ -306,7 +336,8 @@ message fetch_block_height_handler {
   uint64 height = 2;
 }
 
-//! void block_chain_impl::fetch_last_height(last_height_fetch_handler handler);
+/// fetch height of latest block.
+//! void fetch_last_height(last_height_fetch_handler handler) const;
 message fetch_last_height_request {
   string handler = 1;
 }
@@ -316,8 +347,9 @@ message fetch_last_height_handler {
   uint64 height = 2;
 }
 
-//! void block_chain_impl::fetch_transaction(const hash_digest& hash,
-//!     transaction_fetch_handler handler);
+/// fetch transaction by hash.
+//! void fetch_transaction(const hash_digest& hash,
+//!     transaction_fetch_handler handler) const;
 message fetch_transaction_request {
   bytes hash = 1;
   string handler = 2;
@@ -326,23 +358,39 @@ message fetch_transaction_request {
 message fetch_transaction_handler {
   int32 error = 1;
   tx transaction = 2;
+  uint64 height = 3;
 }
 
-//! void block_chain_impl::fetch_transaction_index(const hash_digest& hash,
-//!     transaction_index_fetch_handler handler);
-message fetch_transaction_index_request {
+/// fetch position and height within block of transaction by hash.
+//! void fetch_transaction_position(const hash_digest& hash,
+//!     transaction_index_fetch_handler handler) const;
+message fetch_transaction_position_request {
   bytes hash = 1;
   string handler = 2;
 }
 
-message fetch_transaction_index_handler {
+message fetch_transaction_position_handler {
   int32 error = 1;
-  uint64 height = 2;
-  uint64 index = 3;
+  uint64 position = 2;
+  uint64 height = 3;
 }
 
-//! void block_chain_impl::fetch_spend(const chain::output_point& outpoint,
-//!     spend_fetch_handler handler);
+/// fetch the output of an outpoint (spent or otherwise).
+//! void fetch_output(const chain::output_point& outpoint,
+//!     output_fetch_handler handler) const;
+message fetch_output_request {
+  point outpoint = 1;
+  string handler = 2;
+}
+
+message fetch_output_handler {
+  int32 error = 1;
+  tx_output output = 2;
+}
+
+/// fetch the inpoint (spender) of an outpoint.
+//! void fetch_spend(const chain::output_point& outpoint,
+//!     spend_fetch_handler handler) const;
 message fetch_spend_request {
   point outpoint = 1;
   string handler = 2;
@@ -353,8 +401,10 @@ message fetch_spend_handler {
   point point = 2;
 }
 
-//! void block_chain_impl::fetch_history(const wallet::payment_address& address,
-//!     uint64_t limit, uint64_t from_height, history_fetch_handler handler);
+/// fetch outputs, values and spends for an address.
+//! void fetch_history(const wallet::payment_address& address,
+//!     uint64_t limit, uint64_t from_height,
+//!     history_fetch_handler handler) const;
 message fetch_history_request {
   message payment_address {
     bool valid = 1;
@@ -380,8 +430,9 @@ message fetch_history_handler {
   repeated history_compact history = 2;
 }
 
-//! void block_chain_impl::fetch_stealth(const binary& filter, uint64_t from_height,
-//!     stealth_fetch_handler handler);
+/// fetch stealth results.
+//! void fetch_stealth(const binary& filter, uint64_t from_height,
+//!     stealth_fetch_handler handler) const;
 message fetch_stealth_request {
   uint64 filter_size = 1;
   bytes filter_blocks = 2;
@@ -400,8 +451,94 @@ message fetch_stealth_handler {
   repeated stealth_compact stealth = 2;
 }
 
-//! void block_chain_impl::filter_blocks(message::get_data::ptr message,
-//!     result_handler handler);
+/// fetch a block locator relative to the current top and threshold.
+//! void fetch_block_locator(const chain::block::indexes& heights,
+//!     block_locator_fetch_handler handler) const;
+message fetch_block_locator_request {
+  repeated uint64 heights = 1;
+  string handler = 2;
+}
+
+message fetch_block_locator_handler {
+  message get_blocks {
+    repeated bytes start_hashes = 1;
+    bytes stop_hash = 2;
+  }
+
+  int32 error = 1;
+  get_blocks locator = 2;
+}
+
+/// fetch the set of block hashes indicated by the block locator.
+//! void fetch_locator_block_hashes(get_blocks_const_ptr locator,
+//!     const hash_digest& threshold, size_t limit,
+//!     inventory_fetch_handler handler) const;
+message fetch_locator_block_hashes_request {
+  message get_blocks {
+    repeated bytes start_hashes = 1;
+    bytes stop_hash = 2;
+  }
+
+  get_blocks locator = 1;
+  bytes threshold = 2;
+  uint64 limit = 3;
+  string handler = 4;
+}
+
+message fetch_locator_block_hashes_handler {
+  message inventory_vector {
+    uint32 type = 1;
+    bytes hash = 2;
+  }
+
+  int32 error = 1;
+  repeated inventory_vector inventories = 2;
+}
+
+/// fetch the set of block headers indicated by the block locator.
+//! void fetch_locator_block_headers(get_headers_const_ptr locator,
+//!     const hash_digest& threshold, size_t limit,
+//!     locator_block_headers_fetch_handler handler) const;
+message fetch_locator_block_headers_request {
+  message get_headers {
+    repeated bytes start_hashes = 1;
+    bytes stop_hash = 2;
+  }
+
+  get_headers locator = 1;
+  bytes threshold = 2;
+  uint64 limit = 3;
+  string handler = 4;
+}
+
+message fetch_locator_block_headers_handler {
+  int32 error = 1;
+  repeated block_header headers = 2;
+}
+
+//! void fetch_floaters(size_t limit,
+//!    inventory_fetch_handler handler) const;
+message fetch_floaters_request {
+  uint64 limit = 1;
+  string handler = 2;
+}
+
+message fetch_floaters_handler {
+  message inventory_vector {
+    uint32 type = 1;
+    bytes hash = 2;
+  }
+
+  int32 error = 1;
+  repeated inventory_vector inventories = 2;
+}
+
+//# Filters.
+// ----------------------------------------------------------------------------
+
+/// filter out block hashes that exist in the store.
+//! void filter_blocks(get_data_ptr message,
+//!     result_handler handler) const;
 message filter_blocks_request {
   message inventory_vector {
     int32 type = 1;
@@ -416,24 +553,9 @@ message filter_blocks_handler {
   int32 error = 1;
 }
 
-//! void block_chain_impl::filter_orphans(message::get_data::ptr message,
-//!     result_handler handler);
-message filter_orphans_request {
-  message inventory_vector {
-    int32 type = 1;
-    bytes hash = 2;
-  }
-
-  repeated inventory_vector message = 1;
-  string handler = 2;
-}
-
-message filter_orphans_handler {
-  int32 error = 1;
-}
-
-//! void block_chain_impl::filter_transactions(message::get_data::ptr message,
-//!     result_handler handler);
+/// filter out transaction hashes that exist in the store.
+//! void filter_transactions(get_data_ptr message,
+//!     result_handler handler) const;
 message filter_transactions_request {
   message inventory_vector {
     int32 type = 1;
@@ -448,7 +570,45 @@ message filter_transactions_handler {
   int32 error = 1;
 }
 
-//! void block_chain_impl::subscribe_reorganize(reorganize_handler handler);
+/// filter out block hashes that exist in the orphan pool.
+//! void filter_orphans(get_data_ptr message,
+//!     result_handler handler) const;
+message filter_orphans_request {
+  message inventory_vector {
+    int32 type = 1;
+    bytes hash = 2;
+  }
+
+  repeated inventory_vector message = 1;
+  string handler = 2;
+}
+
+message filter_orphans_handler {
+  int32 error = 1;
+}
+
+/// filter out transaction hashes that exist in the store.
+//! void filter_floaters(get_data_ptr message,
+//!     result_handler handler) const;
+message filter_floaters_request {
+  message inventory_vector {
+    int32 type = 1;
+    bytes hash = 2;
+  }
+
+  repeated inventory_vector message = 1;
+  string handler = 2;
+}
+
+message filter_floaters_handler {
+  int32 error = 1;
+}
+
+//# Subscribers.
+// ----------------------------------------------------------------------------
+
+/// Subscribe to blockchain reorganizations, get forks/height.
+//! void subscribe_reorganize(reorganize_handler handler);
 message subscribe_reorganize_request {
   string handler = 1;
 }
@@ -465,77 +625,105 @@ message subscribe_reorganize_handler {
   repeated block_message replaced_blocks = 4;
 }
 
-//!
+/// Subscribe to memory pool additions, get tx and unconfirmed outputs.
+//! void subscribe_transaction(transaction_handler handler);
+message subscribe_transaction_request {
+  string handler = 1;
+}
+
+message subscribe_transaction_handler {
+  int32 error = 1;
+  repeated point indexes = 2;
+  tx transaction = 3;
+}
+
+//# Organizers (pools).
+// ----------------------------------------------------------------------------
+
+/// Store a block in the orphan pool, triggers may trigger reorganization.
+//! void organize(block_const_ptr block, result_handler handler);
+message organize_block_request {
+  block block = 1;
+  string handler = 2;
+}
+
+message organize_block_handler {
+  int32 error = 1;
+}
+
+/// Store a transaction to the pool.
+//! void organize(transaction_const_ptr transaction,
+//!     transaction_store_handler handler);
+message organize_transaction_request {
+  tx transaction = 1;
+  string handler = 2;
+}
+
+message organize_transaction_handler {
+  int32 error = 1;
+  repeated uint32 indexes = 2;
+}
+
+// ============================================================================
 message request {
   oneof request_type {
-    transaction_pool.request pool = 1;
+    // Startup and shutdown.
+    start_request start = 1000;
+    start_pools_request start_pools = 1001;
+    stop_request stop = 1002;
+    close_request close = 1003;
 
-    start_request start = 2;
+    // Readers.
+    get_gaps_request get_gaps = 2000;
+    get_block_exists_request get_block_exists = 2001;
+    get_fork_difficulty_request get_fork_difficulty = 2002;
+    get_header_request get_header = 2003;
+    get_height_request get_height = 2004;
+    get_bits_request get_bits = 2005;
+    get_timestamp_request get_timestamp = 2006;
+    get_version_request get_version = 2007;
+    get_last_height_request get_last_height = 2008;
+    get_output_request get_output = 2009;
+    get_is_unspent_transaction_request get_is_unspent_transaction = 2010;
+    get_transaction_request get_transaction = 2011;
 
-    stop_request stop = 3;
+    // Writers.
+    begin_writes_request begin_writes = 3000;
+    end_writes_request end_writes = 3001;
+    insert_request insert = 3002;
+    push_request push = 3003;
+    pop_request pop = 3004;
+    swap_request swap = 3005;
 
-    close_request close = 4;
+    // Queries.
+    fetch_block_request fetch_block = 4000;
+    fetch_block_header_request fetch_block_header = 4001;
+    fetch_merkle_block_request fetch_merkle_block = 4002;
+    fetch_block_height_request fetch_block_height = 4003;
+    fetch_last_height_request fetch_last_height = 4004;
+    fetch_transaction_request fetch_transaction = 4005;
+    fetch_transaction_position_request fetch_transaction_position = 4006;
+    fetch_output_request fetch_output = 4007;
+    fetch_spend_request fetch_spend = 4008;
+    fetch_history_request fetch_history = 4009;
+    fetch_stealth_request fetch_stealth = 4010;
+    fetch_block_locator_request fetch_block_locator = 4011;
+    fetch_locator_block_hashes_request fetch_locator_block_hashes = 4012;
+    fetch_locator_block_headers_request fetch_locator_block_headers = 4013;
+    fetch_floaters_request fetch_floaters = 4014;
 
-    get_gap_range_request get_gap_range = 5;
+    //# Filters.
+    filter_blocks_request filter_blocks = 5000;
+    filter_transactions_request filter_transactions = 5001;
+    filter_orphans_request filter_orphans = 5002;
+    filter_floaters_request filter_floaters = 5003;
 
-    get_next_gap_request get_next_gap = 6;
+    //# Subscribers.
+    subscribe_reorganize_request subscribe_reorganize = 6000;
+    subscribe_transaction_request subscribe_transaction = 6001;
 
-    get_difficulty_request get_difficulty = 7;
-
-    get_header_request get_header = 8;
-
-    get_height_request get_height = 9;
-
-    get_last_height_request get_last_height = 10;
-
-    get_outpoint_transaction_request get_outpoint_transaction = 11;
-
-    get_transaction_request get_transaction = 12;
-
-    get_transaction_height_request get_transaction_height = 13;
-
-    import_request import = 14;
-
-    push_request push = 15;
-
-    pop_from_request pop_from = 16;
-
-    store_request store = 17;
-
-    fetch_block_request fetch_block = 18;
-
-    fetch_block_header_request fetch_block_header = 19;
-
-    fetch_merkle_block_request fetch_merkle_block = 20;
-
-    fetch_block_transaction_hashes_request fetch_block_transaction_hashes = 21;
-
-    fetch_block_locator_request fetch_block_locator = 22;
-
-    fetch_locator_block_hashes_request fetch_locator_block_hashes = 23;
-
-    fetch_locator_block_headers_request fetch_locator_block_headers = 24;
-
-    fetch_block_height_request fetch_block_height = 25;
-
-    fetch_last_height_request fetch_last_height = 26;
-
-    fetch_transaction_request fetch_transaction = 27;
-
-    fetch_transaction_index_request fetch_transaction_index = 28;
-
-    fetch_spend_request fetch_spend = 29;
-
-    fetch_history_request fetch_history = 30;
-
-    fetch_stealth_request fetch_stealth = 31;
-
-    filter_blocks_request filter_blocks = 32;
-
-    filter_orphans_request filter_orphans = 33;
-
-    filter_transactions_request filter_transactions = 34;
-
-    subscribe_reorganize_request subscribe_reorganize = 35;
+    //# Organizers (pools).
+    organize_block_request organize_block = 7000;
+    organize_transaction_request organize_transaction = 7001;
   }
 }

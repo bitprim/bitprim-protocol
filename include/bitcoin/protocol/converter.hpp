@@ -51,6 +51,12 @@ public:
     virtual bool from_protocol(const std::shared_ptr<point> point,
         chain::output_point& result);
 
+    virtual bool from_protocol(const point* point,
+        chain::input_point& result);
+
+    virtual bool from_protocol(const std::shared_ptr<point> point,
+        chain::input_point& result);
+
     virtual bool from_protocol(const tx_input* input,
         chain::input& result);
 
@@ -92,6 +98,11 @@ public:
         protocol::point& result);
 
     virtual protocol::point* to_protocol(const chain::output_point& point);
+
+    virtual bool to_protocol(const chain::input_point& point,
+        protocol::point& result);
+
+    virtual protocol::point* to_protocol(const chain::input_point& point);
 
     virtual bool to_protocol(const chain::input& input,
         tx_input& result);

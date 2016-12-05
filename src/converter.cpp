@@ -92,6 +92,21 @@ bool converter::from_protocol(const std::shared_ptr<point> point,
     return from_protocol(point.get(), result);
 }
 
+bool converter::from_protocol(const point* point, chain::input_point& result)
+{
+    if (point == nullptr)
+        return false;
+
+    result.set_index(point->index());
+    return unpack_hash(result.hash(), point->hash());
+}
+
+bool converter::from_protocol(const std::shared_ptr<point> point,
+    chain::input_point& result)
+{
+    return from_protocol(point.get(), result);
+}
+
 bool converter::from_protocol(const tx_input* input, chain::input& result)
 {
     if (input == nullptr)
@@ -110,8 +125,7 @@ bool converter::from_protocol(const tx_input* input, chain::input& result)
 
     // protocol question - is the data encoding of the script to be
     // prefixed with operation count?
-    return result.script().from_data(data, false,
-        chain::script::parse_mode::raw_data_fallback);
+    return result.script().from_data(data, false);
 }
 
 bool converter::from_protocol(const std::shared_ptr<tx_input> input,
@@ -131,8 +145,7 @@ bool converter::from_protocol(const tx_output* output, chain::output& result)
 
     // protocol question - is the data encoding of the script to be
     // prefixed with operation count?
-    return result.script().from_data(data, false,
-        chain::script::parse_mode::raw_data_fallback);
+    return result.script().from_data(data, false);
 }
 
 bool converter::from_protocol(const std::shared_ptr<tx_output> output,
@@ -207,7 +220,6 @@ bool converter::from_protocol(const block_header* header,
     result.set_timestamp(header->timestamp());
     result.set_bits(header->bits());
     result.set_nonce(header->nonce());
-    result.set_transaction_count(header->tx_count());
     return unpack_hash(result.merkle(), header->merkle_root()) &&
         unpack_hash(result.previous_block_hash(), header->previous_block_hash());
 }
@@ -287,6 +299,24 @@ bool converter::to_protocol(const chain::output_point& point,
 }
 
 point* converter::to_protocol(const chain::output_point& point)
+{
+    std::unique_ptr<protocol::point> result(new protocol::point());
+
+    if (!to_protocol(point, *(result.get())))
+        result.reset();
+
+    return result.release();
+}
+
+bool converter::to_protocol(const chain::input_point& point,
+    protocol::point& result)
+{
+    result.set_hash(pack_hash(point.hash()));
+    result.set_index(point.index());
+    return true;
+}
+
+point* converter::to_protocol(const chain::input_point& point)
 {
     std::unique_ptr<protocol::point> result(new protocol::point());
 
@@ -400,7 +430,6 @@ bool converter::to_protocol(const chain::header& header, block_header& result)
     result.set_nonce(header.nonce());
     result.set_merkle_root(pack_hash(header.merkle()));
     result.set_previous_block_hash(pack_hash(header.previous_block_hash()));
-    result.set_tx_count(header.transaction_count());
     return true;
 }
 

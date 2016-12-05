@@ -27,9 +27,6 @@ message block_header {
     uint32 bits = 5;
     
     uint32 nonce = 6;
-    
-    // variable length integer in protocol, not involved in hash computation
-    uint64 tx_count = 7;
 }
 
 //

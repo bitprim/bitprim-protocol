@@ -35,52 +35,6 @@ using namespace bc::protocol;
 
 std::string encoded_script = "76a91418c0bd8d1818f1bf99cb1df2269c645318ef7b7388ac\n";
 
-// TODO: move these comparison operators to the bc::chain classes.
-bool operator==(const chain::script& a, const chain::script& b)
-{
-    const auto encoded_a = a.to_data(false);
-    const auto encoded_b = b.to_data(false);
-    return encoded_a == encoded_b;
-}
-
-bool operator==(const chain::input& a, const chain::input& b)
-{
-    return (a.previous_output == b.previous_output)
-        && (a.script == b.script) && (a.sequence == b.sequence);
-}
-
-bool operator==(const chain::output& a, const chain::output& b)
-{
-    return (a.value == b.value) && (a.script == b.script);
-}
-
-bool operator==(const chain::transaction& a, const chain::transaction& b)
-{
-    auto equal = (a.version == b.version) && (a.locktime == b.locktime);
-
-    if (equal && (a.inputs.size() == b.inputs.size()))
-        for (data_chunk::size_type i = 0; equal && i < a.inputs.size(); i++)
-            equal = a.inputs[i] == b.inputs[i];
-
-    if (equal && (a.outputs.size() == b.outputs.size()))
-        for (data_chunk::size_type i = 0; equal && (i < a.outputs.size()); i++)
-            equal = a.outputs[i] == b.outputs[i];
-
-    return equal;
-}
-
-bool operator==(const chain::block& a, const chain::block& b)
-{
-    if (a.header != b.header || a.transactions.size() != b.transactions.size())
-        return false;
-
-    for (data_chunk::size_type i = 0; i < a.transactions.size(); i++)
-        if (!(a.transactions[i] == b.transactions[i]))
-            return false;
-
-    return true;
-}
-
 BOOST_AUTO_TEST_SUITE(converter_tests)
 
 BOOST_AUTO_TEST_CASE(roundtrip_point_valid)
@@ -104,7 +58,7 @@ BOOST_AUTO_TEST_CASE(roundtrip_transaction_input_valid)
 {
     chain::script script_instance;
     const data_chunk data(encoded_script.begin(), encoded_script.end());
-    BOOST_REQUIRE(script_instance.from_data(data, false, chain::script::parse_mode::raw_data_fallback));
+    BOOST_REQUIRE(script_instance.from_data(data, false));
 
     const chain::input initial
     {
@@ -125,7 +79,7 @@ BOOST_AUTO_TEST_CASE(roundtrip_transaction_output_valid)
 {
     chain::script script_instance;
     const data_chunk data(encoded_script.begin(), encoded_script.end());
-    BOOST_REQUIRE(script_instance.from_data(data, false, chain::script::parse_mode::raw_data_fallback));
+    BOOST_REQUIRE(script_instance.from_data(data, false));
 
     converter converter;
     chain::output initial{ 6548621547, script_instance };
@@ -142,7 +96,7 @@ BOOST_AUTO_TEST_CASE(roundtrip_transaction_valid)
 {
     chain::script script_instance;
     const data_chunk data(encoded_script.begin(), encoded_script.end());
-    BOOST_REQUIRE(script_instance.from_data(data, false, chain::script::parse_mode::raw_data_fallback));
+    BOOST_REQUIRE(script_instance.from_data(data, false));
 
     const chain::input::list tx_inputs
     {
@@ -173,8 +127,7 @@ BOOST_AUTO_TEST_CASE(roundtrip_block_header_valid)
         hash_literal(BCP_SATOSHIS_WORDS_TX_HASH),
         856345324,
         21324121,
-        576859232,
-        16
+        576859232
     };
 
     converter converter;
@@ -190,7 +143,7 @@ BOOST_AUTO_TEST_CASE(roundtrip_block_valid)
 {
     chain::script script_instance;
     const data_chunk data(encoded_script.begin(), encoded_script.end());
-    BOOST_REQUIRE(script_instance.from_data(data, false, chain::script::parse_mode::raw_data_fallback));
+    BOOST_REQUIRE(script_instance.from_data(data, false));
 
     const chain::input::list tx_inputs
     {
@@ -209,8 +162,7 @@ BOOST_AUTO_TEST_CASE(roundtrip_block_valid)
         hash_literal(BCP_SATOSHIS_WORDS_TX_HASH),
         856345324,
         21324121,
-        576859232,
-        1
+        576859232
     };
     const chain::block initial{ header, transactions };
 
