@@ -5,54 +5,69 @@ import "interface.proto";
 package libbitcoin.protocol.database;
 
 
-//# Startup and shutdown.
+////# Startup and shutdown.
+//// ----------------------------------------------------------------------------
+//
+//
+///// Start or restart the blockchain.
+////! bool start();
+//message start_request {
+//}
+//
+//message start_reply {
+//  bool result = 1;
+//}
+//
+///// Start the orphan pool and the transaction pool.
+////! bool start_pools();
+//message start_pools_request {
+//}
+//
+//message start_pools_reply {
+//  bool result = 1;
+//}
+//
+///// Optional signal work stop, speeds shutdown with multiple threads.
+////! bool stop();
+//message stop_request {
+//}
+//
+//message stop_reply {
+//  bool result = 1;
+//}
+//
+///// Unmaps all memory and frees the database file handles.
+////! bool close();
+//message close_request {
+//}
+//
+//message close_reply {
+//  bool result = 1;
+//}
+//
+////# Readers.
+//// ----------------------------------------------------------------------------
+//
+///// Get the set of block gaps in the chain.
+////! bool get_gaps(database::block_database::heights& out_gaps) const;
+//message get_top_request {
+//}
+//
+//message get_top_reply {
+//  bool result = 1;
+//  uint64 out_height = 2;
+//}
+
+
+//# ???? TODO Fer
 // ----------------------------------------------------------------------------
 
-/// Start or restart the blockchain.
-//! bool start();
-message start_request {
+/// The index of the highest existing block, independent of gaps.
+//! bool top(size_t& out_height) const;
+message top_request {
 }
 
-message start_reply {
-  bool result = 1;
-}
-
-/// Start the orphan pool and the transaction pool.
-//! bool start_pools();
-message start_pools_request {
-}
-
-message start_pools_reply {
-  bool result = 1;
-}
-
-/// Optional signal work stop, speeds shutdown with multiple threads.
-//! bool stop();
-message stop_request {
-}
-
-message stop_reply {
-  bool result = 1;
-}
-
-/// Unmaps all memory and frees the database file handles.
-//! bool close();
-message close_request {
-}
-
-message close_reply {
-  bool result = 1;
-}
-
-//# Readers.
-// ----------------------------------------------------------------------------
-
-/// Get the set of block gaps in the chain.
-//! bool get_gaps(database::block_database::heights& out_gaps) const;
-message get_top_request {
-}
-
-message get_top_reply {
+message top_reply {
   bool result = 1;
   uint64 out_height = 2;
 }
@@ -61,13 +76,17 @@ message get_top_reply {
 // ============================================================================
 message request {
   oneof request_type {
-    // Startup and shutdown.
-    start_request start = 1000;
-    start_pools_request start_pools = 1001;
-    stop_request stop = 1002;
-    close_request close = 1003;
+//    // Startup and shutdown.
+//    start_request start = 1000;
+//    start_pools_request start_pools = 1001;
+//    stop_request stop = 1002;
+//    close_request close = 1003;
+//
+//    // Readers.
+//    get_top_request top = 2000;
 
-    // Readers.
-    get_top_request top = 2000;
+      //???? TODO Fer
+      top_request top = 1000;
+
   }
 }
