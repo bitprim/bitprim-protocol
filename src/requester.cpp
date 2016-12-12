@@ -8,6 +8,7 @@
 #include <boost/thread/latch.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <google/protobuf/message_lite.h>
+#include <bitcoin/protocol/interface.pb.h>
 #include <bitcoin/protocol/zmq/message.hpp>
 #include <bitcoin/protocol/zmq/poller.hpp>
 #include <bitcoin/protocol/zmq/zeromq.hpp>
@@ -69,8 +70,20 @@ code requester::connect(const config::endpoint& address)
                     auto handler_iter = _handlers.find(id);
                     BITCOIN_ASSERT(handler_iter != _handlers.end());
 
-                    handler_iter->second(payload);
-                    _handlers.erase(handler_iter);
+                    auto& handler = handler_iter->second;
+                    if (handler.single)
+                    {
+                        handler_iter->second.function(payload);
+                        _handlers.erase(handler_iter);
+                    } else {
+                        void_reply end_message;
+                        if (end_message.ParseFromArray(payload.data(), payload.size()))
+                        {
+                            _handlers.erase(handler_iter);
+                        } else {
+                            handler_iter->second.function(payload);
+                        }
+                    }
                 }
             }
         });

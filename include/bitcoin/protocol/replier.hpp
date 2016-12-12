@@ -28,11 +28,12 @@ class BCP_API replier
         {}
 
         template <typename ...Args>
-        void operator()(Args&&... args)
+        bool operator()(Args&&... args)
         {
             Message reply;
             _handler(std::forward<Args>(args)..., reply);
             _replier_ptr->send_handler_reply(_handler_id, reply);
+            return true;
         }
 
     private:
@@ -66,6 +67,13 @@ public:
         publish_connect(handler_id);
 
         return { this, handler_id, handler };
+    }
+
+    template <typename Message, typename Handler>
+    handler_wrapper<Message, Handler> make_subscription(
+        std::string const& handler_id, Handler const& handler)
+    {
+        return make_handler<Message>(handler_id, handler);
     }
 
 private:

@@ -41,7 +41,9 @@ public:
     template <typename Message, typename Arg, typename Handler>
     std::string make_handler(Arg const& arg, Handler const& handler)
     {
-        return add_handler(Message{}.GetTypeName(),
+        handler_type h;
+        h.single = true;
+        h.function =
             [=] (const data_chunk& payload) -> code
             {
                 Message message;
@@ -52,11 +54,38 @@ public:
 
                 handler(arg, message);
                 return error::success;
-            });
+            };
+
+        return add_handler(Message{}.GetTypeName(), std::move(h));
+    }
+
+    template <typename Message, typename Arg, typename Handler>
+    std::string make_subscription(Arg const& arg, Handler const& handler)
+    {
+        handler_type h;
+        h.single = false;
+        h.function =
+            [=] (const data_chunk& payload) -> code
+            {
+                Message message;
+                const void* data = payload.data();
+                const int size = static_cast<int>(payload.size());
+                if (!message.ParseFromArray(data, size))
+                    return error::bad_stream;
+
+                handler(arg, message);
+                return error::success;
+            };
+
+        return add_handler(Message{}.GetTypeName(), std::move(h));
     }
 
 private:
-    typedef std::function<code(const data_chunk&)> handler_type;
+    struct handler_type
+    {
+        bool single = true;
+        std::function<code(const data_chunk&)> function;
+    };
 
     code do_connect(const config::endpoint& address);
 
