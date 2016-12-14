@@ -135,7 +135,10 @@ identifier socket::id() const
 // This must be called on the socket thread.
 code socket::bind(const config::endpoint& address)
 {
-    if (zmq_bind(self_, address.to_string().c_str()) == zmq_fail)
+    std::string addr = address.to_string();
+    if (address.port() == 0)
+        addr += ":*";
+    if (zmq_bind(self_, addr.c_str()) == zmq_fail)
         return get_last_error();
 
     return error::success;
@@ -148,6 +151,17 @@ code socket::connect(const config::endpoint& address)
         return get_last_error();
 
     return error::success;
+}
+
+/// This must be called on the socket thread.
+bool socket::get_last_endpoint(std::string& endpoint) const
+{
+    endpoint.resize(256);
+    size_t length = endpoint.size();
+    int ret = zmq_getsockopt(self_, ZMQ_LAST_ENDPOINT, &endpoint[0], &length);
+    endpoint.resize(length - 1);
+
+    return ret != zmq_fail;
 }
 
 // private

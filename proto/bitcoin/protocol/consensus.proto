@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+// import "interface.proto";
+
+package libbitcoin.protocol.consensus;
+
+//! verify_result_type verify_script(const unsigned char* transaction,
+//!   size_t transaction_size, const unsigned char* prevout_script,
+//!   size_t prevout_script_size, unsigned int tx_input_index, 
+//!   unsigned int flags);
+message verify_script_request {
+  bytes transaction = 1;
+  bytes prevout_script = 2;
+  uint32 tx_input_index = 3;
+  uint32 flags = 4;
+}
+
+message verify_script_reply {
+  uint32 result = 1;
+}
+
+//!
+message request {
+  oneof request_type {
+    verify_script_request verify_script = 1;
+  }
+}

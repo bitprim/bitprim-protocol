@@ -165,7 +165,9 @@ if (ENABLE_SHARED)
 endif()
 
 set(_bitprim_proto
-  proto/bitcoin/protocol/interface.proto)
+  proto/bitcoin/protocol/interface.proto
+  proto/bitcoin/protocol/blockchain.proto
+  proto/bitcoin/protocol/consensus.proto)
 set(_proto_outdir "${CMAKE_CURRENT_BINARY_DIR}/proto")
 foreach (_proto ${_bitprim_proto})
   get_filename_component(_proto_we ${_proto} NAME_WE)
@@ -196,7 +198,9 @@ endforeach()
 add_library(bitprim-protocol ${MODE}
   src/converter.cpp
   src/packet.cpp
+  src/replier.cpp
   src/request_packet.cpp
+  src/requester.cpp
   src/response_packet.cpp
   src/zmq/authenticator.cpp
   src/zmq/certificate.cpp
@@ -301,7 +305,9 @@ set(_bitprim_headers
   bitcoin/protocol/define.hpp
   bitcoin/protocol/packet.hpp
   bitcoin/protocol/primitives.hpp
+  bitcoin/protocol/replier.hpp
   bitcoin/protocol/request_packet.hpp
+  bitcoin/protocol/requester.hpp
   bitcoin/protocol/response_packet.hpp
   bitcoin/protocol/version.hpp
   # include_bitcoin_protocol_zmq_HEADERS =
