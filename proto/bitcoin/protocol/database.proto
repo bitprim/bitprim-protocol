@@ -72,6 +72,15 @@ message top_reply {
   uint64 out_height = 2;
 }
 
+message insert_block_request {
+  block blockr = 1;
+  uint64 height = 2;
+}
+
+
+message insert_block_reply {
+  bool result = 1;
+}
 
 // ============================================================================
 message request {
@@ -87,6 +96,8 @@ message request {
 
       //???? TODO Fer
       top_request top = 1000;
+
+      insert_block_request insert_block = 2000;
 
   }
 }
