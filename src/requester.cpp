@@ -66,24 +66,28 @@ code requester::connect(const config::endpoint& address)
                     std::string const id = message.dequeue_text();
                     data_chunk const payload = message.dequeue_data();
 
-                    std::lock_guard<std::mutex> lock(_handlers_mutex);
-                    auto handler_iter = _handlers.find(id);
-                    BITCOIN_ASSERT(handler_iter != _handlers.end());
-
-                    auto& handler = handler_iter->second;
-                    if (handler.single)
+                    std::function<code(const data_chunk&)> callback;
                     {
-                        handler_iter->second.function(payload);
-                        _handlers.erase(handler_iter);
-                    } else {
-                        void_reply end_message;
-                        if (end_message.ParseFromArray(payload.data(), payload.size()))
+                        std::lock_guard<std::mutex> lock(_handlers_mutex);
+                        auto handler_iter = _handlers.find(id);
+                        BITCOIN_ASSERT(handler_iter != _handlers.end());
+
+                        auto& handler = handler_iter->second;
+                        if (handler.single)
                         {
+                            callback = std::move(handler_iter->second.function);
                             _handlers.erase(handler_iter);
                         } else {
-                            handler_iter->second.function(payload);
+                            void_reply end_message;
+                            if (end_message.ParseFromArray(payload.data(), payload.size()))
+                            {
+                                _handlers.erase(handler_iter);
+                            } else {
+                                callback = std::ref(handler_iter->second.function);
+                            }
                         }
                     }
+                    callback(payload);
                 }
             }
         });
