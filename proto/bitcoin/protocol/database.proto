@@ -63,7 +63,8 @@ package libbitcoin.protocol.database;
 // ----------------------------------------------------------------------------
 
 /// The index of the highest existing block, independent of gaps.
-//! bool top(size_t& out_height) const;
+
+//! bool block_database::top(size_t& out_height) const;
 message top_request {
 }
 
@@ -72,15 +73,114 @@ message top_reply {
   uint64 out_height = 2;
 }
 
+//! block_result block_database::get(size_t height) const
+message get_request {
+    uint64 height = 1;
+}
+
+message get_reply {
+  block_result result = 1;
+}
+
+
+//! block_result block_database::get(const hash_digest& hash) const
+message get_by_hash_request {
+    bytes hash = 1;
+}
+
+message get_by_hash_reply {
+  block_result result = 1;
+}
+
+
+
+
+
+//! bool data_base::insert(const chain::block& block, size_t height)
 message insert_block_request {
   block blockr = 1;
   uint64 height = 2;
 }
 
-
 message insert_block_reply {
   bool result = 1;
 }
+
+//! bool data_base::push(const block& block, size_t height)
+message push_request {
+  block block = 1;
+  uint64 height = 2;
+}
+
+message push_reply {
+  bool result = 1;
+}
+
+
+
+//! bool store::flush_lock()
+message flush_lock_request {
+}
+
+message flush_lock_reply {
+  bool result = 1;
+}
+
+
+//! bool store::flush_unlock()
+message flush_unlock_request {
+}
+
+message flush_unlock_reply {
+  bool result = 1;
+}
+
+
+//! store::handle store::begin_read() const
+message begin_read_request {
+}
+
+message begin_read_reply {
+  uint64 result = 1;
+}
+
+//! bool store::begin_write(bool lock)
+message begin_write_request {
+    bool lock = 1;
+}
+
+message begin_write_reply {
+  bool result = 1;
+}
+
+//! bool store::end_write(bool unlock)
+message end_write_request {
+    bool unlock = 1;
+}
+
+message end_write_reply {
+  bool result = 1;
+}
+
+
+//! bool store::is_write_locked(handle value) const
+message is_write_locked_request {
+    uint64 handle = 1;
+}
+
+message is_write_locked_reply {
+  bool result = 1;
+}
+
+//! bool store::is_read_valid(handle value) const
+message is_read_valid_request {
+    uint64 handle = 1;
+}
+
+message is_read_valid_reply {
+  bool result = 1;
+}
+
 
 // ============================================================================
 message request {
@@ -94,10 +194,23 @@ message request {
 //    // Readers.
 //    get_top_request top = 2000;
 
-      //???? TODO Fer
       top_request top = 1000;
-
+      get_request get = 1500;
+      get_by_hash_request get_by_hash = 1750;
+      
       insert_block_request insert_block = 2000;
+      push_request push = 3000;
+      
+      flush_lock_request flush_lock = 4000;
+      flush_unlock_request flush_unlock = 5000;
 
+      begin_read_request begin_read = 6000;
+      begin_write_request begin_write = 7000;
+      end_write_request end_write = 8000;
+      is_write_locked_request is_write_locked = 9000;
+      is_read_valid_request is_read_valid = 10000;
+      
+      
+      
   }
 }
