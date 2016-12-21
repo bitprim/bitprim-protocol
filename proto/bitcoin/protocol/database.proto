@@ -108,7 +108,7 @@ message insert_block_reply {
 
 //! bool data_base::push(const block& block, size_t height)
 message push_request {
-  block block = 1;
+  block blockr = 1;
   uint64 height = 2;
 }
 
