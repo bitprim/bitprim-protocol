@@ -92,6 +92,16 @@ message get_by_hash_reply {
   block_result result = 1;
 }
 
+//! bool block_database::gaps(heights& out_gaps) const
+message gaps_request {
+}
+
+message gaps_reply {
+  bool result = 1;
+  repeated uint64 out_gaps = 2;
+}
+
+
 
 
 
@@ -108,7 +118,7 @@ message insert_block_reply {
 
 //! bool data_base::push(const block& block, size_t height)
 message push_request {
-  block blockr = 1;
+  block block = 1;
   uint64 height = 2;
 }
 
@@ -192,13 +202,39 @@ message is_read_valid_reply {
   bool result = 1;
 }
 
+//! transaction_result transaction_database::get(const hash_digest& hash) const
 message get_transaction_request {
   bytes hash = 1;
 }
 
 message get_transaction_reply {
-  tx_result result = 1;
+  transaction_result result = 1;
 }
+
+//! history_compact::list history_database::get(const short_hash& key, size_t limit, size_t from_height) const
+message get_history_database_request {
+  bytes key = 1;
+  uint64 limit = 2;
+  uint64 from_height = 3;
+}
+
+message get_history_database_reply {
+  repeated history_compact result = 1;
+}
+
+//! stealth_compact::list stealth_database::scan(const binary& filter, size_t from_height) const
+message stealth_database_scan_request {
+  binary filter = 1;
+  uint64 from_height = 2;
+}
+
+message stealth_database_scan_reply {
+  repeated stealth_compact result = 1;
+}
+
+
+
+
 
 
 // ============================================================================
@@ -216,11 +252,11 @@ message request {
       top_request top = 1000;
       get_request get = 1500;
       get_by_hash_request get_by_hash = 1750;
+      gaps_request gaps = 1800;
       
       insert_block_request insert_block = 2000;
       push_request push = 3000;
       pop_above_request pop_above = 3500;
-      
       
       flush_lock_request flush_lock = 4000;
       flush_unlock_request flush_unlock = 5000;
@@ -232,7 +268,10 @@ message request {
       is_read_valid_request is_read_valid = 10000;
 
       get_transaction_request get_transaction = 11000;
-  
+      
+      get_history_database_request get_history_database = 12000;
+
+      stealth_database_scan_request stealth_database_scan = 13000;
       
   }
 }
