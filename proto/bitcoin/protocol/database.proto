@@ -116,6 +116,17 @@ message push_reply {
   bool result = 1;
 }
 
+//! bool data_base::pop_above(block::list& out_blocks, const hash_digest& fork_hash)
+message pop_above_request {
+  bytes fork_hash = 1;
+}
+
+message pop_above_reply {
+  bool result = 1;
+  repeated block out_blocks = 2;
+}
+
+
 
 
 //! bool store::flush_lock()
@@ -200,6 +211,8 @@ message request {
       
       insert_block_request insert_block = 2000;
       push_request push = 3000;
+      pop_above_request pop_above = 3500;
+      
       
       flush_lock_request flush_lock = 4000;
       flush_unlock_request flush_unlock = 5000;
