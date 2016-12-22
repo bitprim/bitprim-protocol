@@ -181,6 +181,14 @@ message is_read_valid_reply {
   bool result = 1;
 }
 
+message get_transaction_request {
+  bytes hash = 1;
+}
+
+message get_transaction_reply {
+  tx_result result = 1;
+}
+
 
 // ============================================================================
 message request {
@@ -209,8 +217,9 @@ message request {
       end_write_request end_write = 8000;
       is_write_locked_request is_write_locked = 9000;
       is_read_valid_request is_read_valid = 10000;
-      
-      
+
+      get_transaction_request get_transaction = 11000;
+  
       
   }
 }
