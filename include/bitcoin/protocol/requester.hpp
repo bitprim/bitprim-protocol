@@ -95,6 +95,9 @@ private:
     std::string add_handler(const std::string& message_name,
         handler_type handler);
 
+    void call_handler(const std::string& id,
+        const data_chunk& payload);
+
     zmq::context& _context;
     asio::service _io_service;
     asio::service::work _io_work;
@@ -104,6 +107,9 @@ private:
     mutable std::mutex _handlers_mutex;
     uint64_t _next_handler_id = 0;
     std::map<std::string, handler_type> _handlers;
+    asio::service _handlers_service;
+    asio::thread _handlers_thread;
+    asio::service::work _handlers_work;
     boost::optional<zmq::socket> _subscriber_socket;
     std::string _subscriber_endpoint;
 };

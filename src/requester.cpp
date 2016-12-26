@@ -19,7 +19,9 @@ namespace protocol {
 requester::requester(zmq::context& context)
   : _context(context),
     _io_service(),
-    _io_work(_io_service)
+    _io_work(_io_service),
+    _handlers_service(),
+    _handlers_work(_handlers_service)
 {}
 
 requester::requester(zmq::context& context, const config::endpoint& address)
@@ -43,6 +45,11 @@ code requester::connect(const config::endpoint& address)
 {
     _io_service.reset();
 
+    _handlers_service.reset();
+    _handlers_thread = asio::thread([&] {
+        _handlers_service.run();
+    });
+
     code ec;
     {
         boost::latch latch(1);
@@ -65,29 +72,7 @@ code requester::connect(const config::endpoint& address)
 
                     std::string const id = message.dequeue_text();
                     data_chunk const payload = message.dequeue_data();
-
-                    std::function<code(const data_chunk&)> callback;
-                    {
-                        std::lock_guard<std::mutex> lock(_handlers_mutex);
-                        auto handler_iter = _handlers.find(id);
-                        BITCOIN_ASSERT(handler_iter != _handlers.end());
-
-                        auto& handler = handler_iter->second;
-                        if (handler.single)
-                        {
-                            callback = std::move(handler_iter->second.function);
-                            _handlers.erase(handler_iter);
-                        } else {
-                            void_reply end_message;
-                            if (end_message.ParseFromArray(payload.data(), payload.size()))
-                            {
-                                _handlers.erase(handler_iter);
-                            } else {
-                                callback = std::ref(handler_iter->second.function);
-                            }
-                        }
-                    }
-                    callback(payload);
+                    call_handler(id, payload);
                 }
             }
         });
@@ -96,15 +81,47 @@ code requester::connect(const config::endpoint& address)
     return ec;
 }
 
+void requester::call_handler(const std::string& id,
+     const data_chunk& payload)
+{
+    std::function<code(const data_chunk&)> callback;
+    {
+        std::lock_guard<std::mutex> lock(_handlers_mutex);
+        auto handler_iter = _handlers.find(id);
+        BITCOIN_ASSERT(handler_iter != _handlers.end());
+
+        auto& handler = handler_iter->second;
+        if (handler.single)
+        {
+            callback = std::move(handler_iter->second.function);
+            _handlers.erase(handler_iter);
+        } else {
+            void_reply end_message;
+            if (end_message.ParseFromArray(payload.data(), payload.size()))
+            {
+                _handlers.erase(handler_iter);
+            } else {
+                callback = std::ref(handler_iter->second.function);
+            }
+        }
+    }
+
+    _handlers_service.dispatch([=]{
+        callback(payload);
+    });
+}
+
 code requester::disconnect()
 {
     _io_service.stop();
-
     if (_io_thread.joinable())
         _io_thread.join();
 
     _socket = boost::none;
 
+    _handlers_service.stop();
+    if (_handlers_thread.joinable())
+        _handlers_thread.join();
     _handlers.clear();
     _subscriber_socket = boost::none;
     _subscriber_endpoint.clear();
