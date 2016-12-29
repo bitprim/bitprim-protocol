@@ -112,6 +112,24 @@ code requester::send(const google::protobuf::MessageLite& request,
     return ec;
 }
 
+code requester::simple_req_connect(const config::endpoint& address)
+{
+    _socket = boost::in_place(
+        std::ref(_context), zmq::socket::role::requester);
+    if (!*_socket)
+        return zmq::get_last_error();
+
+    code ec = _socket->connect(address);
+    if (ec)
+        return ec;
+    return ec;
+}
+code requester::simple_req_send(const google::protobuf::MessageLite& request,
+    google::protobuf::MessageLite& reply)
+{
+	return do_send(request,reply);
+}
+
 code requester::do_connect(const config::endpoint& address)
 {
     _socket = boost::in_place(

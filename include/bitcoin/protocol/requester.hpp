@@ -54,6 +54,10 @@ public:
                 return error::success;
             });
     }
+    code simple_req_connect(const config::endpoint& address);
+
+    code simple_req_send(const google::protobuf::MessageLite& request,
+        google::protobuf::MessageLite& reply);
 
 private:
     typedef std::function<code(const data_chunk&)> handler_type;
@@ -62,7 +66,7 @@ private:
 
     code do_send(const google::protobuf::MessageLite& request,
         google::protobuf::MessageLite& reply);
-
+private:
     std::string add_handler(const std::string& message_name,
         handler_type handler);
 
