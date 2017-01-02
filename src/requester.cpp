@@ -4,6 +4,7 @@
 #include <bitcoin/protocol/zmq/message.hpp>
 #include <bitcoin/protocol/zmq/poller.hpp>
 #include <bitcoin/protocol/zmq/zeromq.hpp>
+#include <boost/utility/in_place_factory.hpp>
 
 namespace libbitcoin {
 namespace protocol {
