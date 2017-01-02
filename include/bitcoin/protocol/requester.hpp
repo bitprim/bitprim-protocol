@@ -1,3 +1,8 @@
+//code simple_req_connect(const config::endpoint& address);
+//
+//code simple_req_send(const google::protobuf::MessageLite& request,
+//                     google::protobuf::MessageLite& reply);
+
 
 #ifndef LIBBITCOIN_PROTOCOL_REQUESTER_HPP
 #define LIBBITCOIN_PROTOCOL_REQUESTER_HPP
@@ -20,6 +25,7 @@ namespace protocol {
 class BCP_API requester
 {
 public:
+
     requester(zmq::context& context);
 
     requester(zmq::context& context, const config::endpoint& address);
@@ -36,28 +42,30 @@ public:
     code disconnect();
 
     code send(const google::protobuf::MessageLite& request,
-        google::protobuf::MessageLite& reply);
+              google::protobuf::MessageLite& reply);
 
     template <typename Message, typename Arg, typename Handler>
     std::string make_handler(Arg const& arg, Handler const& handler)
     {
         return add_handler(Message{}.GetTypeName(),
-            [=] (const data_chunk& payload) -> code
-            {
-                Message message;
-                const void* data = payload.data();
-                const int size = static_cast<int>(payload.size());
-                if (!message.ParseFromArray(data, size))
-                    return error::bad_stream;
+                           [=] (const data_chunk& payload) -> code
+                           {
+                               Message message;
+                               const void* data = payload.data();
+                               const int size = static_cast<int>(payload.size());
+                               if (!message.ParseFromArray(data, size))
+                                   return error::bad_stream;
 
-                handler(arg, message);
-                return error::success;
-            });
+                               handler(arg, message);
+                               return error::success;
+                           });
     }
+
+
     code simple_req_connect(const config::endpoint& address);
 
     code simple_req_send(const google::protobuf::MessageLite& request,
-        google::protobuf::MessageLite& reply);
+                         google::protobuf::MessageLite& reply);
 
 private:
     typedef std::function<code(const data_chunk&)> handler_type;
@@ -65,10 +73,10 @@ private:
     code do_connect(const config::endpoint& address);
 
     code do_send(const google::protobuf::MessageLite& request,
-        google::protobuf::MessageLite& reply);
-private:
+                 google::protobuf::MessageLite& reply);
+
     std::string add_handler(const std::string& message_name,
-        handler_type handler);
+                            handler_type handler);
 
     zmq::context& _context;
     asio::service _io_service;

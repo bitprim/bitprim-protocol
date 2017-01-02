@@ -1,13 +1,6 @@
-
 #include <bitcoin/protocol/requester.hpp>
 
-#include <mutex>
-#include <functional>
-#include <string>
-#include <system_error>
 #include <boost/thread/latch.hpp>
-#include <boost/utility/in_place_factory.hpp>
-#include <google/protobuf/message_lite.h>
 #include <bitcoin/protocol/zmq/message.hpp>
 #include <bitcoin/protocol/zmq/poller.hpp>
 #include <bitcoin/protocol/zmq/zeromq.hpp>
@@ -15,14 +8,23 @@
 namespace libbitcoin {
 namespace protocol {
 
+code requester::simple_req_connect(const config::endpoint& address)
+{
+    return connect(address);
+}
+code requester::simple_req_send(const google::protobuf::MessageLite& request, google::protobuf::MessageLite& reply)
+{
+    return send(request, reply);
+}
+
 requester::requester(zmq::context& context)
-  : _context(context),
-    _io_service(),
-    _io_work(_io_service)
+        : _context(context),
+          _io_service(),
+          _io_work(_io_service)
 {}
 
 requester::requester(zmq::context& context, const config::endpoint& address)
-  : requester(context)
+        : requester(context)
 {
     code ec = connect(address);
     if (ec) throw std::system_error(ec);
@@ -44,7 +46,7 @@ code requester::connect(const config::endpoint& address)
 
     code ec;
     {
-        boost::latch latch(1);
+        boost::latch latch(2);
 
         _io_thread = asio::thread([&] {
             ec = do_connect(address);
@@ -56,25 +58,25 @@ code requester::connect(const config::endpoint& address)
             {
                 _io_service.poll();
 
-                auto const& ids = poller.wait(100); // ms
-                if (ids.contains(_subscriber_socket->id()))
-                {
-                    zmq::message message;
-                    _subscriber_socket->receive(message);
-
-                    std::string const id = message.dequeue_text();
-                    data_chunk const payload = message.dequeue_data();
-
-                    std::lock_guard<std::mutex> lock(_handlers_mutex);
-                    auto handler_iter = _handlers.find(id);
-                    BITCOIN_ASSERT(handler_iter != _handlers.end());
-
-                    handler_iter->second(payload);
-                    _handlers.erase(handler_iter);
-                }
+//                                auto const& ids = poller.wait(1); // ms
+//                                if (ids.contains(_subscriber_socket->id()))
+//                                {
+//                                    zmq::message message;
+//                                    _subscriber_socket->receive(message);
+//
+//                                    std::string const id = message.dequeue_text();
+//                                    data_chunk const payload = message.dequeue_data();
+//
+//                                    std::lock_guard<std::mutex> lock(_handlers_mutex);
+//                                    auto handler_iter = _handlers.find(id);
+//                                    BITCOIN_ASSERT(handler_iter != _handlers.end());
+//
+//                                    handler_iter->second(payload);
+//                                    _handlers.erase(handler_iter);
+//                                }
             }
         });
-        latch.wait();
+        latch.count_down_and_wait();
     }
     return ec;
 }
@@ -96,44 +98,26 @@ code requester::disconnect()
 }
 
 code requester::send(const google::protobuf::MessageLite& request,
-    google::protobuf::MessageLite& reply)
+                     google::protobuf::MessageLite& reply)
 {
     BITCOIN_ASSERT(_socket);
 
     code ec;
     {
-        boost::latch latch(1);
+        boost::latch latch(2);
         _io_service.dispatch([&] () {
             ec = do_send(request, reply);
             latch.count_down();
         });
-        latch.wait();
+        latch.count_down_and_wait();
     }
     return ec;
-}
-
-code requester::simple_req_connect(const config::endpoint& address)
-{
-    _socket = boost::in_place(
-        std::ref(_context), zmq::socket::role::requester);
-    if (!*_socket)
-        return zmq::get_last_error();
-
-    code ec = _socket->connect(address);
-    if (ec)
-        return ec;
-    return ec;
-}
-code requester::simple_req_send(const google::protobuf::MessageLite& request,
-    google::protobuf::MessageLite& reply)
-{
-	return do_send(request,reply);
 }
 
 code requester::do_connect(const config::endpoint& address)
 {
     _socket = boost::in_place(
-        std::ref(_context), zmq::socket::role::requester);
+            std::ref(_context), zmq::socket::role::requester);
     if (!*_socket)
         return zmq::get_last_error();
 
@@ -142,7 +126,7 @@ code requester::do_connect(const config::endpoint& address)
         return ec;
 
     _subscriber_socket = boost::in_place(
-        std::ref(_context), zmq::socket::role::pair);
+            std::ref(_context), zmq::socket::role::pair);
     if (!*_subscriber_socket)
         return zmq::get_last_error();
 
@@ -157,7 +141,7 @@ code requester::do_connect(const config::endpoint& address)
 }
 
 code requester::do_send(const google::protobuf::MessageLite& request,
-    google::protobuf::MessageLite& reply)
+                        google::protobuf::MessageLite& reply)
 {
     zmq::message message;
     message.enqueue_protobuf_message(request);
@@ -176,12 +160,12 @@ code requester::do_send(const google::protobuf::MessageLite& request,
 }
 
 std::string requester::add_handler(const std::string& message_name,
-    handler_type handler)
+                                   handler_type handler)
 {
     std::lock_guard<std::mutex> lock(_handlers_mutex);
 
     const std::string handler_id =
-        message_name + '/' + std::to_string(++_next_handler_id);
+            message_name + '/' + std::to_string(++_next_handler_id);
     _handlers[handler_id] = std::move(handler);
 
     return _subscriber_endpoint + '/' + handler_id;
