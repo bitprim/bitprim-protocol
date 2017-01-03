@@ -62,7 +62,7 @@ code requester::connect(const config::endpoint& address)
             poller.add(*_subscriber_socket);
             while (!_io_service.stopped())
             {
-                _io_service.poll();
+                while (_io_service.poll()) {}
 
                 auto const& ids = poller.wait(100); // ms
                 if (ids.contains(_subscriber_socket->id()))
