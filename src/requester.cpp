@@ -52,7 +52,7 @@ code requester::connect(const config::endpoint& address)
 
     code ec;
     {
-        boost::latch latch(1);
+        boost::latch latch(2);
 
         _io_thread = asio::thread([&] {
             ec = do_connect(address);
@@ -76,7 +76,7 @@ code requester::connect(const config::endpoint& address)
                 }
             }
         });
-        latch.wait();
+        latch.count_down_and_wait();
     }
     return ec;
 }
@@ -136,12 +136,12 @@ code requester::send(const google::protobuf::MessageLite& request,
 
     code ec;
     {
-        boost::latch latch(1);
+        boost::latch latch(2);
         _io_service.dispatch([&] () {
             ec = do_send(request, reply);
             latch.count_down();
         });
-        latch.wait();
+        latch.count_down_and_wait();
     }
     return ec;
 }
