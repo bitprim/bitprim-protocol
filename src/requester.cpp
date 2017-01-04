@@ -96,19 +96,23 @@ void requester::call_handler(const std::string& id,
             callback = std::move(handler_iter->second.function);
             _handlers.erase(handler_iter);
         } else {
-            void_reply end_message;
-            if (end_message.ParseFromArray(payload.data(), payload.size()))
-            {
-                _handlers.erase(handler_iter);
-            } else {
+            // handle unsubscribe
+            //void_reply end_message;
+            //if (end_message.ParseFromArray(payload.data(), payload.size()))
+            //{
+            //    _handlers.erase(handler_iter);
+            //} else {
                 callback = std::ref(handler_iter->second.function);
-            }
+            //}
         }
     }
 
-    _handlers_service.dispatch([=]{
-        callback(payload);
-    });
+    if (callback != nullptr)
+    {
+        _handlers_service.dispatch([=]{
+            callback(payload);
+        });
+    }
 }
 
 code requester::disconnect()
