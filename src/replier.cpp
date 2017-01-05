@@ -97,6 +97,7 @@ code replier::send_handler_reply(std::string const& handler_id,
     zmq::message message;
     message.enqueue(id);
     message.enqueue_protobuf_message(reply);
+    BITCOIN_ASSERT(message.size() == 2);
     return publish_iter->second.send(message);
 }
 

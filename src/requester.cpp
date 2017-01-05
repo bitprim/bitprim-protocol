@@ -69,6 +69,7 @@ code requester::connect(const config::endpoint& address)
                 {
                     zmq::message message;
                     _subscriber_socket->receive(message);
+                    BITCOIN_ASSERT(message.size() == 2);
 
                     std::string const id = message.dequeue_text();
                     data_chunk const payload = message.dequeue_data();
