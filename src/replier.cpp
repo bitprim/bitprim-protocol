@@ -2,6 +2,7 @@
 #include <bitcoin/protocol/replier.hpp>
 
 #include <functional>
+#include <mutex>
 #include <string>
 #include <system_error>
 #include <tuple>
@@ -15,8 +16,14 @@ namespace libbitcoin {
 namespace protocol {
 
 replier::replier(zmq::context& context)
-  : _context(context)
-{}
+  : _context(context),
+    _handlers_service(),
+    _handlers_work(_handlers_service)
+{
+    _handlers_thread = asio::thread([&] {
+        _handlers_service.run();
+    });
+}
 
 replier::replier(zmq::context& context, const config::endpoint& address)
   : replier(context)
@@ -73,15 +80,26 @@ code replier::publish_connect(std::string const& handler_id)
     const std::string endpoint =
         handler_id.substr(0, handler_id.find_first_of('/'));
 
+    std::lock_guard<std::mutex> lock(_handlers_mutex);
     if (_publish_sockets.count(endpoint))
         return error::success;
 
-    auto iter = _publish_sockets.emplace(std::piecewise_construct,
-        std::forward_as_tuple(endpoint),
-        std::forward_as_tuple(std::ref(_context), zmq::socket::role::pair)).first;
-    auto& socket = iter->second;
+    code ec;
+    {
+        boost::latch latch(2);
+        _handlers_service.dispatch([&] () {
+            auto iter = _publish_sockets.emplace(std::piecewise_construct,
+                std::forward_as_tuple(endpoint),
+                std::forward_as_tuple(std::ref(_context), zmq::socket::role::pair)).first;
+            auto& socket = iter->second;
 
-    return socket.connect("tcp://" + endpoint);
+            ec = socket.connect("tcp://" + endpoint);
+            latch.count_down();
+        });
+        latch.count_down_and_wait();
+    }
+    return ec;
+
 }
 
 code replier::send_handler_reply(std::string const& handler_id,
@@ -91,14 +109,25 @@ code replier::send_handler_reply(std::string const& handler_id,
     const std::string endpoint = handler_id.substr(0, separator);
     const std::string id = handler_id.substr(separator + 1);
 
+    std::lock_guard<std::mutex> lock(_handlers_mutex);
     auto publish_iter = _publish_sockets.find(endpoint);
     BITCOIN_ASSERT(publish_iter != _publish_sockets.end());
 
-    zmq::message message;
-    message.enqueue(id);
-    message.enqueue_protobuf_message(reply);
-    BITCOIN_ASSERT(message.size() == 2);
-    return publish_iter->second.send(message);
+    code ec;
+    {
+        boost::latch latch(2);
+        _handlers_service.dispatch([&] () {
+            zmq::message message;
+            message.enqueue(id);
+            message.enqueue_protobuf_message(reply);
+            BITCOIN_ASSERT(message.size() == 2);
+
+            ec = publish_iter->second.send(message);
+            latch.count_down();
+        });
+        latch.count_down_and_wait();
+    }
+    return ec;
 }
 
 }

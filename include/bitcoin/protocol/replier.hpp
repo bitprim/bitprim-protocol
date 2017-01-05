@@ -3,10 +3,13 @@
 #define LIBBITCOIN_PROTOCOL_REPLIER_HPP
 
 #include <map>
+#include <mutex>
 #include <string>
 #include <boost/optional.hpp>
 #include <google/protobuf/message_lite.h>
 #include <bitcoin/bitcoin/config/endpoint.hpp>
+#include <bitcoin/bitcoin/utility/asio.hpp>
+#include <bitcoin/bitcoin/utility/thread.hpp>
 #include <bitcoin/protocol/zmq/context.hpp>
 #include <bitcoin/protocol/zmq/message.hpp>
 #include <bitcoin/protocol/zmq/socket.hpp>
@@ -85,6 +88,11 @@ private:
 private:
     zmq::context& _context;
     boost::optional<zmq::socket> _socket;
+
+    mutable std::mutex _handlers_mutex;
+    asio::service _handlers_service;
+    asio::thread _handlers_thread;
+    asio::service::work _handlers_work;
     std::map<std::string, zmq::socket> _publish_sockets;
 };
 
