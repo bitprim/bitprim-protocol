@@ -643,8 +643,9 @@ message subscribe_transaction_handler {
 /// Store a block in the orphan pool, triggers may trigger reorganization.
 //! void organize(block_const_ptr block, result_handler handler);
 message organize_block_request {
-  block block = 1;
-  string handler = 2;
+  block actual = 1;
+  uint64 originator = 2;
+  string handler = 3;
 }
 
 message organize_block_handler {
