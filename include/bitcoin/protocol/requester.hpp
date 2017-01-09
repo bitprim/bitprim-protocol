@@ -107,9 +107,7 @@ private:
     mutable std::mutex _handlers_mutex;
     uint64_t _next_handler_id = 0;
     std::map<std::string, handler_type> _handlers;
-    asio::service _handlers_service;
-    asio::thread _handlers_thread;
-    asio::service::work _handlers_work;
+    bc::threadpool _handlers_threadpool;
     boost::optional<zmq::socket> _subscriber_socket;
     std::string _subscriber_endpoint;
 };

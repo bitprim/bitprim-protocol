@@ -20,8 +20,7 @@ requester::requester(zmq::context& context)
   : _context(context),
     _io_service(),
     _io_work(_io_service),
-    _handlers_service(),
-    _handlers_work(_handlers_service)
+    _handlers_threadpool(1)
 {}
 
 requester::requester(zmq::context& context, const config::endpoint& address)
@@ -44,11 +43,6 @@ requester::operator const bool() const
 code requester::connect(const config::endpoint& address)
 {
     _io_service.reset();
-
-    _handlers_service.reset();
-    _handlers_thread = asio::thread([&] {
-        _handlers_service.run();
-    });
 
     code ec;
     {
@@ -110,7 +104,7 @@ void requester::call_handler(const std::string& id,
 
     if (callback != nullptr)
     {
-        _handlers_service.dispatch([=]{
+        _handlers_threadpool.service().dispatch([=]{
             callback(payload);
         });
     }
@@ -124,10 +118,8 @@ code requester::disconnect()
 
     _socket = boost::none;
 
-    _handlers_service.stop();
-    if (_handlers_thread.joinable())
-        _handlers_thread.join();
-    _handlers.clear();
+    _handlers_threadpool.shutdown();
+    _handlers_threadpool.join();
     _subscriber_socket = boost::none;
     _subscriber_endpoint.clear();
 
