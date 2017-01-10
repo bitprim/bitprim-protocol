@@ -82,7 +82,7 @@ public:
 private:
     code publish_connect(std::string const& handler_id);
 
-    code send_handler_reply(std::string const& handler_id,
+    void send_handler_reply(std::string const& handler_id,
         const google::protobuf::MessageLite& reply);
 
 private:

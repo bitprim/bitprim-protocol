@@ -115,7 +115,7 @@ code replier::publish_connect(std::string const& handler_id)
     return ec;
 }
 
-code replier::send_handler_reply(std::string const& handler_id,
+void replier::send_handler_reply(std::string const& handler_id,
     const google::protobuf::MessageLite& reply)
 {
     const auto separator = handler_id.find_first_of('/');
@@ -133,22 +133,9 @@ code replier::send_handler_reply(std::string const& handler_id,
     message.enqueue_protobuf_message(reply);
     BITCOIN_ASSERT(message.size() == 2);
 
-    code ec;
-    {
-        boost::latch latch(2);
-        _handlers_service.dispatch([&] () {
-            auto publish_iter = [&] {
-                std::lock_guard<std::mutex> lock(_handlers_mutex);
-                return _publish_sockets.find(endpoint);
-            }();
-            BITCOIN_ASSERT(publish_iter != _publish_sockets.end());
-
-            ec = publish_iter->second.send(message);
-            latch.count_down();
-        });
-        latch.count_down_and_wait();
-    }
-    return ec;
+    _handlers_service.dispatch([=] () mutable {
+        publish_iter->second.send(message);
+    });
 }
 
 }
