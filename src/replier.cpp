@@ -80,6 +80,13 @@ code replier::publish_connect(std::string const& handler_id)
     const std::string endpoint =
         handler_id.substr(0, handler_id.find_first_of('/'));
 
+    {
+        std::lock_guard<std::mutex> lock(_handlers_mutex);
+
+        if (_publish_sockets.count(endpoint))
+            return error::success;
+    }
+
     code ec;
     {
         boost::latch latch(2);
@@ -106,7 +113,6 @@ code replier::publish_connect(std::string const& handler_id)
         latch.count_down_and_wait();
     }
     return ec;
-
 }
 
 code replier::send_handler_reply(std::string const& handler_id,
@@ -115,6 +121,12 @@ code replier::send_handler_reply(std::string const& handler_id,
     const auto separator = handler_id.find_first_of('/');
     const std::string endpoint = handler_id.substr(0, separator);
     const std::string id = handler_id.substr(separator + 1);
+
+    auto publish_iter = [&] {
+        std::lock_guard<std::mutex> lock(_handlers_mutex);
+        return _publish_sockets.find(endpoint);
+    }();
+    BITCOIN_ASSERT(publish_iter != _publish_sockets.end());
 
     zmq::message message;
     message.enqueue(id);
