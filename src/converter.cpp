@@ -114,8 +114,7 @@ bool converter::from_protocol(const tx_input* input, chain::input& result)
 
     chain::output_point previous;
     if (!input->has_previous_output() ||
-        !from_protocol(&(input->previous_output()), previous) ||
-        input->script().empty())
+        !from_protocol(&(input->previous_output()), previous))
         return false;
 
     result.set_previous_output(previous);
@@ -136,7 +135,7 @@ bool converter::from_protocol(const std::shared_ptr<tx_input> input,
 
 bool converter::from_protocol(const tx_output* output, chain::output& result)
 {
-    if (output == nullptr || output->script().empty())
+    if (output == nullptr)
         return false;
 
     result.set_value(output->value());
