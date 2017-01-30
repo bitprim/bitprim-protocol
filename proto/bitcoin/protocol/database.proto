@@ -1,0 +1,277 @@
+syntax = "proto3";
+
+import "interface.proto";
+
+package libbitcoin.protocol.database;
+
+
+////# Startup and shutdown.
+//// ----------------------------------------------------------------------------
+//
+//
+///// Start or restart the blockchain.
+////! bool start();
+//message start_request {
+//}
+//
+//message start_reply {
+//  bool result = 1;
+//}
+//
+///// Start the orphan pool and the transaction pool.
+////! bool start_pools();
+//message start_pools_request {
+//}
+//
+//message start_pools_reply {
+//  bool result = 1;
+//}
+//
+///// Optional signal work stop, speeds shutdown with multiple threads.
+////! bool stop();
+//message stop_request {
+//}
+//
+//message stop_reply {
+//  bool result = 1;
+//}
+//
+///// Unmaps all memory and frees the database file handles.
+////! bool close();
+//message close_request {
+//}
+//
+//message close_reply {
+//  bool result = 1;
+//}
+//
+////# Readers.
+//// ----------------------------------------------------------------------------
+//
+///// Get the set of block gaps in the chain.
+////! bool get_gaps(database::block_database::heights& out_gaps) const;
+//message get_top_request {
+//}
+//
+//message get_top_reply {
+//  bool result = 1;
+//  uint64 out_height = 2;
+//}
+
+
+//# ???? TODO Fer
+// ----------------------------------------------------------------------------
+
+/// The index of the highest existing block, independent of gaps.
+
+//! bool block_database::top(size_t& out_height) const;
+message top_request {
+}
+
+message top_reply {
+  bool result = 1;
+  uint64 out_height = 2;
+}
+
+//! block_result block_database::get(size_t height) const
+message get_request {
+    uint64 height = 1;
+}
+
+message get_reply {
+  block_result result = 1;
+}
+
+
+//! block_result block_database::get(const hash_digest& hash) const
+message get_by_hash_request {
+    bytes hash = 1;
+}
+
+message get_by_hash_reply {
+  block_result result = 1;
+}
+
+//! bool block_database::gaps(heights& out_gaps) const
+message gaps_request {
+}
+
+message gaps_reply {
+  bool result = 1;
+  repeated uint64 out_gaps = 2;
+}
+
+
+
+
+
+
+//! bool data_base::insert(const chain::block& block, size_t height)
+message insert_block_request {
+  block blockr = 1;
+  uint64 height = 2;
+}
+
+message insert_block_reply {
+  bool result = 1;
+}
+
+//! bool data_base::push(const block& block, size_t height)
+message push_request {
+  block block = 1;
+  uint64 height = 2;
+}
+
+message push_reply {
+  bool result = 1;
+}
+
+//! bool data_base::pop_above(block::list& out_blocks, const hash_digest& fork_hash)
+message pop_above_request {
+  bytes fork_hash = 1;
+}
+
+message pop_above_reply {
+  bool result = 1;
+  repeated block out_blocks = 2;
+}
+
+
+
+
+//! bool store::flush_lock()
+message flush_lock_request {
+}
+
+message flush_lock_reply {
+  bool result = 1;
+}
+
+
+//! bool store::flush_unlock()
+message flush_unlock_request {
+}
+
+message flush_unlock_reply {
+  bool result = 1;
+}
+
+
+//! store::handle store::begin_read() const
+message begin_read_request {
+}
+
+message begin_read_reply {
+  uint64 result = 1;
+}
+
+//! bool store::begin_write(bool lock)
+message begin_write_request {
+    bool lock = 1;
+}
+
+message begin_write_reply {
+  bool result = 1;
+}
+
+//! bool store::end_write(bool unlock)
+message end_write_request {
+    bool unlock = 1;
+}
+
+message end_write_reply {
+  bool result = 1;
+}
+
+
+//! bool store::is_write_locked(handle value) const
+message is_write_locked_request {
+    uint64 handle = 1;
+}
+
+message is_write_locked_reply {
+  bool result = 1;
+}
+
+//! bool store::is_read_valid(handle value) const
+message is_read_valid_request {
+    uint64 handle = 1;
+}
+
+message is_read_valid_reply {
+  bool result = 1;
+}
+
+//! transaction_result transaction_database::get(const hash_digest& hash) const
+message get_transaction_request {
+  bytes hash = 1;
+}
+
+message get_transaction_reply {
+  transaction_result result = 1;
+}
+
+//! history_compact::list history_database::get(const short_hash& key, size_t limit, size_t from_height) const
+message get_history_database_request {
+  bytes key = 1;
+  uint64 limit = 2;
+  uint64 from_height = 3;
+}
+
+message get_history_database_reply {
+  repeated history_compact result = 1;
+}
+
+//! stealth_compact::list stealth_database::scan(const binary& filter, size_t from_height) const
+message stealth_database_scan_request {
+  binary filter = 1;
+  uint64 from_height = 2;
+}
+
+message stealth_database_scan_reply {
+  repeated stealth_compact result = 1;
+}
+
+
+
+
+
+
+// ============================================================================
+message request {
+  oneof request_type {
+//    // Startup and shutdown.
+//    start_request start = 1000;
+//    start_pools_request start_pools = 1001;
+//    stop_request stop = 1002;
+//    close_request close = 1003;
+//
+//    // Readers.
+//    get_top_request top = 2000;
+
+      top_request top = 1000;
+      get_request get = 1500;
+      get_by_hash_request get_by_hash = 1750;
+      gaps_request gaps = 1800;
+      
+      insert_block_request insert_block = 2000;
+      push_request push = 3000;
+      pop_above_request pop_above = 3500;
+      
+      flush_lock_request flush_lock = 4000;
+      flush_unlock_request flush_unlock = 5000;
+
+      begin_read_request begin_read = 6000;
+      begin_write_request begin_write = 7000;
+      end_write_request end_write = 8000;
+      is_write_locked_request is_write_locked = 9000;
+      is_read_valid_request is_read_valid = 10000;
+
+      get_transaction_request get_transaction = 11000;
+      
+      get_history_database_request get_history_database = 12000;
+
+      stealth_database_scan_request stealth_database_scan = 13000;
+      
+  }
+}

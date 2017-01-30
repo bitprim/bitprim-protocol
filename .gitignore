@@ -27,3 +27,5 @@ obj
 .dirstamp
 
 /build
+/.idea
+cmake-build-debug/
