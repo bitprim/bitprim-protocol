@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2016 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin-protocol.
+ * This file is part of libbitcoin.
  *
- * libbitcoin-protocol is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) 
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +14,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef LIBBITCOIN_PROTOCOL_ZMQ_SOCKET_HPP
 #define LIBBITCOIN_PROTOCOL_ZMQ_SOCKET_HPP
@@ -38,7 +37,7 @@ class authenticator;
 /// This class is thread safe except as noted.
 /// Because the socket is only set on construct, sockets are not restartable.
 class BCP_API socket
-  : public enable_shared_from_base<socket>
+  : public enable_shared_from_base<socket>, noncopyable
 {
 public:
     /// The full set of socket roles defined by zeromq.
@@ -66,10 +65,6 @@ public:
 
     /// Construct a socket of the given context and role.
     socket(context& context, role socket_role);
-
-    /// This class is not copyable.
-    socket(const socket&) = delete;
-    void operator=(const socket&) = delete;
 
     /// Close the socket.
     /// The object must be destroyed on the socket thread if not stopped.
