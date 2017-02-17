@@ -138,6 +138,19 @@ message insert_block_reply {
   uint32 result = 1;
 }
 
+
+
+//! code data_base::push(const chain::transaction& tx, uint32_t forks)
+message push_tx_request {
+  tx tx = 1;
+  uint64 forks = 2;
+}
+
+message push_tx_reply {
+  uint32 result = 1;
+}
+
+
 //! (OLD) bool data_base::push(const block& block, size_t height)
 //! (NEW) code data_base::push(const block& block, size_t height)
 message push_request {
@@ -230,8 +243,7 @@ message is_read_valid_reply {
   bool result = 1;
 }
 
-//! transaction_result transaction_database::get(const hash_digest& hash,
-//! size_t fork_height, bool require_confirmed) const
+//! transaction_result transaction_database::get(const hash_digest& hash, size_t fork_height, bool require_confirmed) const
 message get_transaction_request {
     bytes hash = 1;
     uint64 fork_height = 2;
