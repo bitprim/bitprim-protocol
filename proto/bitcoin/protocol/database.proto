@@ -204,13 +204,16 @@ message is_read_valid_reply {
   bool result = 1;
 }
 
-//! transaction_result transaction_database::get(const hash_digest& hash) const
+//! transaction_result transaction_database::get(const hash_digest& hash,
+//! size_t fork_height, bool require_confirmed) const
 message get_transaction_request {
-  bytes hash = 1;
+    bytes hash = 1;
+    uint64 fork_height = 2;
+    bool require_confirmed = 3;
 }
 
 message get_transaction_reply {
-  transaction_result result = 1;
+    transaction_result result = 1;
 }
 
 //! history_compact::list history_database::get(const short_hash& key, size_t limit, size_t from_height) const
