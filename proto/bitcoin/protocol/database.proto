@@ -165,18 +165,20 @@ message begin_read_reply {
   uint64 result = 1;
 }
 
-//! bool store::begin_write(bool lock)
+//! (OLD) bool store::begin_write(bool lock)
+//! (NEW) bool store::begin_write() const;
 message begin_write_request {
-    bool lock = 1;
+    // bool lock = 1;     //Not used after the Feb2017 merge
 }
 
 message begin_write_reply {
   bool result = 1;
 }
 
-//! bool store::end_write(bool unlock)
+//! (OLD) bool store::end_write(bool unlock)
+//! (NEW )bool store::end_write() const;
 message end_write_request {
-    bool unlock = 1;
+    // bool unlock = 1;   //Not used after the Feb2017 merge
 }
 
 message end_write_reply {
