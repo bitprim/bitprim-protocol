@@ -106,35 +106,61 @@ message gaps_reply {
 
 
 
-//! bool data_base::insert(const chain::block& block, size_t height)
+
+
+// TODO: Nuevo Feb2017
+//! bool data_base::begin_insert() const;
+message begin_insert_request {}
+
+message begin_insert_reply {
+  bool result = 1;
+}
+
+
+// TODO: Nuevo Feb2017
+//! bool data_base::end_insert() const;
+message end_insert_request {}
+
+message end_insert_reply {
+  bool result = 1;
+}
+
+
+//! (OLD) bool data_base::insert(const chain::block& block, size_t height)
+//! (NEW) code data_base::insert(const chain::block& block, size_t height)
 message insert_block_request {
   block blockr = 1;
   uint64 height = 2;
 }
 
 message insert_block_reply {
-  bool result = 1;
+  // bool result = 1;   // Note: changes Feb2017
+  uint32 result = 1;
 }
 
-//! bool data_base::push(const block& block, size_t height)
+//! (OLD) bool data_base::push(const block& block, size_t height)
+//! (NEW) code data_base::push(const block& block, size_t height)
 message push_request {
   block block = 1;
   uint64 height = 2;
 }
 
 message push_reply {
-  bool result = 1;
+  // bool result = 1;   // Note: changes Feb2017
+  uint32 result = 1;
 }
 
-//! bool data_base::pop_above(block::list& out_blocks, const hash_digest& fork_hash)
-message pop_above_request {
-  bytes fork_hash = 1;
-}
 
-message pop_above_reply {
-  bool result = 1;
-  repeated block out_blocks = 2;
-}
+// TODO: Eliminado en Feb2017
+// //! bool data_base::pop_above(block::list& out_blocks, const hash_digest& fork_hash)
+// message pop_above_request {
+//   bytes fork_hash = 1;
+// }
+
+// message pop_above_reply {
+//   bool result = 1;
+//   repeated block out_blocks = 2;
+// }
 
 
 
@@ -258,7 +284,7 @@ message request {
       
       insert_block_request insert_block = 2000;
       push_request push = 3000;
-      pop_above_request pop_above = 3500;
+      // pop_above_request pop_above = 3500;
       
       flush_lock_request flush_lock = 4000;
       flush_unlock_request flush_unlock = 5000;
