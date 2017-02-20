@@ -563,6 +563,26 @@ message fetch_locator_block_headers_handler {
   repeated block_header headers = 2;
 }
 
+
+
+//! void block_chain::fetch_mempool(size_t count_limit, uint64_t minimum_fee, inventory_fetch_handler handler) const;
+message fetch_mempool_request {
+  uint64 count_limit = 1;
+  uint64 minimum_fee = 2;
+  string handler = 3;
+}
+
+message fetch_mempool_handler {
+  message inventory_vector {
+    uint32 type = 1;
+    bytes hash = 2;
+  }
+
+  int32 error = 1;
+  repeated inventory_vector inventories = 2;
+}
+
+
 //! void fetch_floaters(size_t limit,
 //!    inventory_fetch_handler handler) const;
 message fetch_floaters_request {
@@ -761,6 +781,8 @@ message request {
     fetch_locator_block_hashes_request fetch_locator_block_hashes = 4012;
     fetch_locator_block_headers_request fetch_locator_block_headers = 4013;
     fetch_floaters_request fetch_floaters = 4014;
+    fetch_mempool_request fetch_mempool = 4015;
+    
 
     //# Filters.
     filter_blocks_request filter_blocks = 5000;
