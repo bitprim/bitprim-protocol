@@ -741,7 +741,7 @@ message request {
     begin_insert_request begin_insert = 3000;
     end_writes_request end_writes = 3001;
     insert_request insert = 3002;
-    push_request push = 3003;
+//    push_request push = 3003;
     pop_request pop = 3004;
     swap_request swap = 3005;
 
