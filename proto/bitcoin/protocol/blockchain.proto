@@ -328,8 +328,9 @@ message fetch_merkle_block_request {
 message fetch_merkle_block_handler {
   message merkle_block {
     block_header header = 1;
-    repeated bytes hashes = 2;
-    bytes flags = 3;
+    uint32 total_transactions = 2;
+    repeated bytes hashes = 3;
+    bytes flags = 4;
   }
 
   int32 error = 1;
