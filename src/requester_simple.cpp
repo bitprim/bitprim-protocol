@@ -58,23 +58,6 @@ code requester_simple::connect(const config::endpoint& address)
             while (!_io_service.stopped())
             {
                 _io_service.poll();
-
-//                                auto const& ids = poller.wait(1); // ms
-//                                if (ids.contains(_subscriber_socket->id()))
-//                                {
-//                                    zmq::message message;
-//                                    _subscriber_socket->receive(message);
-//
-//                                    std::string const id = message.dequeue_text();
-//                                    data_chunk const payload = message.dequeue_data();
-//
-//                                    std::lock_guard<std::mutex> lock(_handlers_mutex);
-//                                    auto handler_iter = _handlers.find(id);
-//                                    BITCOIN_ASSERT(handler_iter != _handlers.end());
-//
-//                                    handler_iter->second(payload);
-//                                    _handlers.erase(handler_iter);
-//                                }
             }
         });
         latch.count_down_and_wait();

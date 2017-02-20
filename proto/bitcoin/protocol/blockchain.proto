@@ -67,17 +67,30 @@ message get_block_exists_reply {
   bool result = 1;
 }
 
-/// Get the difficulty of the fork starting at the given height.
-//! bool get_fork_difficulty(hash_number& out_difficulty,
-//!     uint64_t height) const;
-message get_fork_difficulty_request {
+
+/// Get the hash of the block if it exists.
+//! bool get_block_hash(hash_digest& out_hash, size_t height) const;
+message get_block_hash_request {
   uint64 height = 1;
 }
 
-message get_fork_difficulty_reply {
+message get_block_hash_reply {
   bool result = 1;
-  bytes out_difficulty = 2;
+  bytes out_hash = 2;
 }
+
+
+/// Get the difficulty of the fork starting at the given height.
+//! bool get_fork_difficulty(hash_number& out_difficulty,
+//!     uint64_t height) const;
+// message get_fork_difficulty_request {
+//   uint64 height = 1;
+// }
+// 
+// message get_fork_difficulty_reply {
+//   bool result = 1;
+//   bytes out_difficulty = 2;
+// }
 
 /// Get the header of the block at the given height.
 //! bool get_header(chain::header& out_header, uint64_t height) const;
@@ -190,11 +203,11 @@ message get_transaction_reply {
 
 
 /// Set the flush lock scope (for use only with insert).
-//! bool begin_writes();
-message begin_writes_request {
+//! bool begin_insert();
+message begin_insert_request {
 }
 
-message begin_writes_reply {
+message begin_insert_reply {
   bool result = 1;
 }
 
@@ -208,28 +221,29 @@ message end_writes_reply {
 }
 
 /// Insert a block to the blockchain, height is checked for existence.
-//! bool insert(block_const_ptr block, uint64_t height, bool flush);
+//! (OLD) bool insert(block_const_ptr block, uint64_t height, bool flush);
+//! (NEW) bool insert(block_const_ptr block, uint64_t height);
 message insert_request {
   block block = 1;
   uint64 height = 2;
-  bool flush = 3;
+  //bool flush = 3;
 }
 
 message insert_reply {
   bool result = 1;
 }
 
-/// Append the blocks to the top of the chain, height is validated.
-//! bool push(const block_const_ptr_list& block, uint64_t height, bool flush);
-message push_request {
-  repeated block blocks = 1;
-  uint64 height = 2;
-  bool flush = 3;
-}
-
-message push_reply {
-  bool result = 1;
-}
+// /// Append the blocks to the top of the chain, height is validated.
+// //! bool push(const block_const_ptr_list& block, uint64_t height, bool flush);
+// message push_request {
+//   repeated block blocks = 1;
+//   uint64 height = 2;
+//   bool flush = 3;
+// }
+// 
+// message push_reply {
+//   bool result = 1;
+// }
 
 /// Remove blocks from above the given hash, returning them in order.
 //! bool pop(block_const_ptr_list& out_blocks, const hash_digest& fork_hash,
@@ -677,7 +691,7 @@ message request {
     // Readers.
     get_gaps_request get_gaps = 2000;
     get_block_exists_request get_block_exists = 2001;
-    get_fork_difficulty_request get_fork_difficulty = 2002;
+    //get_fork_difficulty_request get_fork_difficulty = 2002;
     get_header_request get_header = 2003;
     get_height_request get_height = 2004;
     get_bits_request get_bits = 2005;
@@ -687,9 +701,11 @@ message request {
     get_output_request get_output = 2009;
     get_is_unspent_transaction_request get_is_unspent_transaction = 2010;
     get_transaction_request get_transaction = 2011;
+    get_block_hash_request get_block_hash = 2012;
+    
 
     // Writers.
-    begin_writes_request begin_writes = 3000;
+    begin_insert_request begin_insert = 3000;
     end_writes_request end_writes = 3001;
     insert_request insert = 3002;
     push_request push = 3003;
