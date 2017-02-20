@@ -405,6 +405,7 @@ message fetch_transaction_handler {
   int32 error = 1;
   tx transaction = 2;
   uint64 height = 3;
+  uint64 position = 4;
 }
 
 /// fetch position and height within block of transaction by hash.
