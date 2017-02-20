@@ -338,6 +338,37 @@ message fetch_merkle_block_handler {
   uint64 height = 3;
 }
 
+
+
+/// fetch compact block by block hash.
+//! void fetch_compact_block(const hash_digest& hash,
+//!     compact_block_fetch_handler handler) const;
+
+message fetch_compact_block_request {
+  bytes hash = 1;
+  string handler = 2;
+}
+
+message fetch_compact_block_handler {
+
+  message prefilled_transaction {
+    int64 index = 1;
+    tx tx = 2;
+  }
+
+  message compact_block {
+    block_header header = 1;
+    int64 nonce = 2;
+    repeated bytes short_ids = 3;                       //short_id_list
+    repeated prefilled_transaction transactions = 4;   //prefilled_transaction::list
+  }
+
+  int32 error = 1;
+  compact_block block = 2;
+  uint64 height = 3;
+}
+
+
 /// fetch height of block by hash.
 //! void fetch_block_height(const hash_digest& hash,
 //!     block_height_fetch_handler handler) const;
