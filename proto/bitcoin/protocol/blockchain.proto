@@ -429,7 +429,8 @@ message fetch_transaction_position_handler {
 //!     output_fetch_handler handler) const;
 message fetch_output_request {
   point outpoint = 1;
-  string handler = 2;
+  bool require_confirmed = 2;
+  string handler = 3;
 }
 
 message fetch_output_handler {
