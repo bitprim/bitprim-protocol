@@ -203,7 +203,7 @@ message get_transaction_reply {
 
 
 /// Set the flush lock scope (for use only with insert).
-//! bool begin_insert();
+//! bool begin_insert() const;
 message begin_insert_request {
 }
 
@@ -212,11 +212,11 @@ message begin_insert_reply {
 }
 
 /// Reset the flush lock scope (for use only with insert).
-//! bool end_writes();
-message end_writes_request {
+//! bool end_insert() const;
+message end_insert_request {
 }
 
-message end_writes_reply {
+message end_insert_reply {
   bool result = 1;
 }
 
@@ -394,11 +394,12 @@ message fetch_last_height_handler {
 }
 
 /// fetch transaction by hash.
-//! void fetch_transaction(const hash_digest& hash,
-//!     transaction_fetch_handler handler) const;
+//! (OLD) void fetch_transaction(const hash_digest& hash, transaction_fetch_handler handler) const;
+//! (NEW) void fetch_transaction(const hash_digest& hash, bool require_confirmed, transaction_fetch_handler handler) const;
 message fetch_transaction_request {
   bytes hash = 1;
-  string handler = 2;
+  bool require_confirmed = 2;
+  string handler = 3;
 }
 
 message fetch_transaction_handler {
@@ -413,7 +414,8 @@ message fetch_transaction_handler {
 //!     transaction_index_fetch_handler handler) const;
 message fetch_transaction_position_request {
   bytes hash = 1;
-  string handler = 2;
+  bool require_confirmed = 2;
+  string handler = 3;
 }
 
 message fetch_transaction_position_handler {
@@ -759,7 +761,7 @@ message request {
 
     // Writers.
     begin_insert_request begin_insert = 3000;
-    end_writes_request end_writes = 3001;
+    end_insert_request end_insert = 3001;
     insert_request insert = 3002;
 //    push_request push = 3003;
     pop_request pop = 3004;
@@ -782,6 +784,8 @@ message request {
     fetch_locator_block_headers_request fetch_locator_block_headers = 4013;
     fetch_floaters_request fetch_floaters = 4014;
     fetch_mempool_request fetch_mempool = 4015;
+    fetch_compact_block_request fetch_compact_block = 4016;
+
     
 
     //# Filters.
