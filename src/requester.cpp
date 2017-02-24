@@ -83,16 +83,18 @@ code requester::connect(const config::endpoint& address)
     return ec;
 }
 
-void requester::call_handler(const std::string& id,
+void requester::call_handler(const std::string& str_id,
      const data_chunk& payload)
 {
     std::function<code(const data_chunk&)> callback;
+
+
     {
         std::lock_guard<std::mutex> lock(_handlers_mutex);
 
-        // auto handler_iter = _handlers.find(id);
-        auto handler_iter =std::find(_handlers.begin(), _handlers.end(), [&id](handlers_value_t const& x) {
-            return x.first == id;
+        // auto handler_iter = _handlers.find(str_id);
+        auto handler_iter = std::find_if(_handlers.begin(), _handlers.end(), [&str_id](handlers_value_t const& x) {
+            return x.first == str_id;
         });
 
         BITCOIN_ASSERT(handler_iter != _handlers.end());
@@ -209,7 +211,11 @@ std::string requester::add_handler(const std::string& message_name,
             message_name + '/' + std::to_string(++_next_handler_id);
     
     //_handlers[handler_id] = std::move(handler);
-    _handlers.emplace_back(message_name, std::move(handler));
+    //_handlers.emplace_back(handler_id, std::move(handler));
+	std::cout << "before push_back\n";
+    _handlers.push_back(std::make_pair(handler_id, std::move(handler)));
+	std::cout << "after push_back\n";
+    
 
     return _subscriber_endpoint + '/' + handler_id;
 }
