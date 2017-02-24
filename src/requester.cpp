@@ -92,6 +92,7 @@ void requester::call_handler(const std::string& str_id,
     {
         std::lock_guard<std::mutex> lock(_handlers_mutex);
 
+        // MAP
         // auto handler_iter = _handlers.find(str_id);
         auto handler_iter = std::find_if(_handlers.begin(), _handlers.end(), [&str_id](handlers_value_t const& x) {
             return x.first == str_id;
@@ -102,8 +103,13 @@ void requester::call_handler(const std::string& str_id,
         auto& handler = handler_iter->second;
         if (handler.single)
         {
+            // std::cout << "generating single: handler_id: " << str_id << std::endl;
             callback = std::move(handler_iter->second.function);
             _handlers.erase(handler_iter);
+
+            if (_handlers.capacity() - _handlers.size() >= 1000) { //TODO: hardcoded
+                _handlers.shrink_to_fit();
+            }
         } else {
             // handle unsubscribe
             //void_reply end_message;
@@ -111,14 +117,16 @@ void requester::call_handler(const std::string& str_id,
             //{
             //    _handlers.erase(handler_iter);
             //} else {
-                callback = std::ref(handler_iter->second.function);
+                // MAP
+                // callback = std::ref(handler_iter->second.function);
+                callback = handler_iter->second.function;
             //}
         }
     }
 
     if (callback != nullptr)
     {
-        _handlers_threadpool.service().dispatch([=]{
+        _handlers_threadpool.service().dispatch([=] {
             callback(payload);
         });
     }
@@ -209,13 +217,10 @@ std::string requester::add_handler(const std::string& message_name,
 
     const std::string handler_id =
             message_name + '/' + std::to_string(++_next_handler_id);
-    
+    // MAP
     //_handlers[handler_id] = std::move(handler);
-    //_handlers.emplace_back(handler_id, std::move(handler));
-	std::cout << "before push_back\n";
-    _handlers.push_back(std::make_pair(handler_id, std::move(handler)));
-	std::cout << "after push_back\n";
-    
+    _handlers.emplace_back(handler_id, std::move(handler));
+    //_handlers.push_back(std::make_pair(handler_id, std::move(handler)));
 
     return _subscriber_endpoint + '/' + handler_id;
 }
