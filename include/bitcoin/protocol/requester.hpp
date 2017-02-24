@@ -119,7 +119,12 @@ private:
 
     mutable std::mutex _handlers_mutex;
     uint64_t _next_handler_id = 0;
-    std::map<std::string, handler_type> _handlers;
+    
+    // std::map<std::string, handler_type> _handlers;
+
+    using handlers_value_t = std::pair<std::string, handler_type>;
+    std::vector<handlers_value_t> _handlers;
+
     bc::threadpool _handlers_threadpool;
     boost::optional<zmq::socket> _subscriber_socket;
     std::string _subscriber_endpoint;

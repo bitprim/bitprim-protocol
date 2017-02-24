@@ -89,7 +89,12 @@ void requester::call_handler(const std::string& id,
     std::function<code(const data_chunk&)> callback;
     {
         std::lock_guard<std::mutex> lock(_handlers_mutex);
-        auto handler_iter = _handlers.find(id);
+
+        // auto handler_iter = _handlers.find(id);
+        auto handler_iter =std::find(_handlers.begin(), _handlers.end(), [&id](handlers_value_t const& x) {
+            return x.first == id;
+        });
+
         BITCOIN_ASSERT(handler_iter != _handlers.end());
 
         auto& handler = handler_iter->second;
@@ -202,7 +207,9 @@ std::string requester::add_handler(const std::string& message_name,
 
     const std::string handler_id =
             message_name + '/' + std::to_string(++_next_handler_id);
-    _handlers[handler_id] = std::move(handler);
+    
+    //_handlers[handler_id] = std::move(handler);
+    _handlers.emplace_back(message_name, std::move(handler));
 
     return _subscriber_endpoint + '/' + handler_id;
 }
