@@ -180,8 +180,10 @@ code requester::do_connect(const config::endpoint& address)
             std::ref(_context), zmq::socket::role::pair);
     if (!*_subscriber_socket)
         return zmq::get_last_error();
-
-    ec = _subscriber_socket->bind({ "tcp://127.0.0.1:0" });
+//OLD CODE: ERROR WHEN USING BITPRIM-SERVER
+//    ec = _subscriber_socket->bind({ "tcp://127.0.0.1:0" });
+//TODO: change the endpoint
+    ec = _subscriber_socket->bind({ "tcp://127.0.0.1:20000" });
     if (ec)
         return ec;
 
