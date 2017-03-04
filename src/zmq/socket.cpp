@@ -134,10 +134,14 @@ identifier socket::id() const
 // This must be called on the socket thread.
 code socket::bind(const config::endpoint& address)
 {
-    std::string addr = address.to_string();
-    if (address.port() == 0)
-        addr += ":*";
-    if (zmq_bind(self_, addr.c_str()) == zmq_fail)
+//    OLD CODE: NOT WORKING WITH SERVER
+//    std::string addr = address.to_string();
+//    if (address.port() == 0)
+//        addr += ":*";
+//    if (zmq_bind(self_, addr.c_str()) == zmq_fail)
+//        return get_last_error();
+
+    if (zmq_bind(self_, address.to_string().c_str()) == zmq_fail)
         return get_last_error();
 
     return error::success;
