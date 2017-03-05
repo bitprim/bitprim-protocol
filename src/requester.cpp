@@ -183,7 +183,7 @@ code requester::do_connect(const config::endpoint& address)
 //OLD CODE: ERROR WHEN USING BITPRIM-SERVER
 //    ec = _subscriber_socket->bind({ "tcp://127.0.0.1:0" });
 //TODO: change the endpoint
-    ec = _subscriber_socket->bind({ "tcp://127.0.0.1:20000" });
+    ec = _subscriber_socket->bind_ephemeral({ "tcp://127.0.0.1:0" });
     if (ec)
         return ec;
 

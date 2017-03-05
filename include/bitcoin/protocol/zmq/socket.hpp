@@ -87,6 +87,9 @@ public:
     /// Bind the socket to the specified local address.
     code bind(const config::endpoint& address);
 
+    // Bind for bitprim-mining
+    code bind_ephemeral(const std::string& address);
+
     /// This must be called on the socket thread.
     /// Connect the socket to the specified remote address.
     code connect(const config::endpoint& address);

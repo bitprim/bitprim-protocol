@@ -147,6 +147,18 @@ code socket::bind(const config::endpoint& address)
     return error::success;
 }
 
+// Bind for bitprim-mining
+code socket::bind_ephemeral(const std::string& address)
+{
+    config::endpoint endpoint (address);
+    std::string addr = endpoint.to_string();
+    if (endpoint.port() == 0)
+        addr += ":*";
+    if (zmq_bind(self_, addr.c_str()) == zmq_fail)
+        return get_last_error();
+    return error::success;
+}
+
 // This must be called on the socket thread.
 code socket::connect(const config::endpoint& address)
 {
