@@ -735,6 +735,13 @@ message organize_transaction_handler {
   repeated uint32 indexes = 2;
 }
 
+message fetch_mempool_all_request {
+}
+
+message fetch_mempool_all_reply {
+  repeated tx transaction = 1;
+}
+
 // ============================================================================
 message request {
   oneof request_type {
@@ -786,9 +793,9 @@ message request {
     fetch_floaters_request fetch_floaters = 4014;
     fetch_mempool_request fetch_mempool = 4015;
     fetch_compact_block_request fetch_compact_block = 4016;
+    fetch_mempool_all_request fetch_mempool_all = 4017;
 
     
-
     //# Filters.
     filter_blocks_request filter_blocks = 5000;
     filter_transactions_request filter_transactions = 5001;
