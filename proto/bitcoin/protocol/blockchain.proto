@@ -740,6 +740,7 @@ message fetch_mempool_all_request {
 
 message fetch_mempool_all_reply {
   repeated tx transaction = 1;
+  repeated uint64 fees = 2;
 }
 
 // ============================================================================
