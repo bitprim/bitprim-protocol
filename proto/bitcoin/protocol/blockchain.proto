@@ -736,12 +736,17 @@ message organize_transaction_handler {
 }
 
 message fetch_mempool_all_request {
+  uint64 max_bytes = 1;
 }
 
 message fetch_mempool_all_reply {
-  repeated tx transaction = 1;
-  repeated uint64 fees = 2;
+//  repeated tx transaction = 1;
+//  repeated uint64 fees = 2;
+    repeated tx_mempool transaction = 1;
 }
+
+
+
 
 // ============================================================================
 message request {

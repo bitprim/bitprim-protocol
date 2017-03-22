@@ -145,6 +145,18 @@ message tx {
 }
 
 //
+// Transaction mempool
+//
+message tx_mempool {
+    tx transaction = 1;
+    uint64 fee = 2;
+    uint64 sigops = 3;
+    string dependencies = 4;
+    uint64 weight = 5;
+}
+
+
+//
 // Block
 //
 message block {
