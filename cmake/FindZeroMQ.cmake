@@ -33,6 +33,8 @@ find_path(ZeroMQ_ROOT_DIR
   NAMES include/zmq.h
   )
 
+message("ZeroMQ_ROOT_DIR: ${ZeroMQ_ROOT_DIR}")
+
 if(MSVC)
   #add in all the names it can have on windows
 
