@@ -6,6 +6,8 @@ get_filename_component(_proto_we ${PROTO_FILE} NAME_WE)
 set(_proto_source "${_proto_we}.pb.cc")
 set(_proto_header "${_proto_we}.pb.h")
 
+message("Protobuf_PROTOC_EXECUTABLE: ${Protobuf_PROTOC_EXECUTABLE} ")
+
 execute_process(
   COMMAND ${Protobuf_PROTOC_EXECUTABLE}
     --cpp_out dllexport_decl=BCP_API:${CMAKE_CURRENT_SOURCE_DIR}
