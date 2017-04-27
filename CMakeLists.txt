@@ -185,6 +185,9 @@ set(_bitprim_proto
   proto/bitcoin/protocol/consensus.proto
   proto/bitcoin/protocol/database.proto)
 set(_proto_outdir "${CMAKE_CURRENT_BINARY_DIR}/proto")
+
+message("Protobuf_PROTOC_EXECUTABLE: ${Protobuf_PROTOC_EXECUTABLE} ")
+
 foreach (_proto ${_bitprim_proto})
   get_filename_component(_proto_we ${_proto} NAME_WE)
   file(MAKE_DIRECTORY "${_proto_outdir}/bitcoin/protocol")
