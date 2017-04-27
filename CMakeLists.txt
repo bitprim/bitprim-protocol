@@ -29,16 +29,31 @@ option(ENABLE_SHARED "" OFF)
 if (NOT ENABLE_SHARED)
   set(Boost_USE_STATIC_LIBS ON)
 endif()
+
 find_package(
   Boost 1.56.0 REQUIRED
   COMPONENTS unit_test_framework)
+
 
 # Require protobuf of at least version 3.0.0 and output ${protobuf_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
 if (DEFINED Protobuf_ROOT_DIR)
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Protobuf_ROOT_DIR})
 endif()
+
 find_package(Protobuf 3 REQUIRED)
+
+
+
+# message("Protobuf_FOUND:             ${Protobuf_FOUND}")
+# message("Protobuf_VERSION:           ${Protobuf_VERSION}")
+# message("Protobuf_INCLUDE_DIRS:      ${Protobuf_INCLUDE_DIRS}")
+# message("Protobuf_LIBRARIES:         ${Protobuf_LIBRARIES}")
+# message("Protobuf_PROTOC_LIBRARIES:  ${Protobuf_PROTOC_LIBRARIES}")
+# message("Protobuf_LITE_LIBRARIES:    ${Protobuf_LITE_LIBRARIES}")
+# message("Protobuf_PROTOC_EXECUTABLE: ${Protobuf_PROTOC_EXECUTABLE}")
+
+
 
 # Require zmq of at least version 4.1.1 and output ${zmq_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
