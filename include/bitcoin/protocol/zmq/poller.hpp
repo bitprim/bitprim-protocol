@@ -26,12 +26,14 @@
 #include <bitcoin/protocol/define.hpp>
 #include <bitcoin/protocol/zmq/identifiers.hpp>
 #include <bitcoin/protocol/zmq/socket.hpp>
+#include <bitcoin/protocol/zmq/zeromq.hpp>
 
 namespace libbitcoin {
 namespace protocol {
 namespace zmq {
 
-/// This class is thread safe except as noted.
+/// This class is not thread safe.
+/// All calls must be made on the socket(s) thread.
 class BCP_API poller
   : public enable_shared_from_base<poller>, noncopyable
 {
@@ -54,31 +56,19 @@ public:
     /// Remove all sockets from the poller.
     void clear();
 
-    /// This must be called on the socket thread.
     /// Wait one second for any socket to receive.
     identifiers wait();
 
-    /// This must be called on the socket thread.
     /// Wait specified time for any socket to receive, -1 is forever.
     identifiers wait(int32_t timeout_milliseconds);
 
 private:
-    // zmq_pollitem_t alias, keeps zmq.h out of our headers.
-    typedef struct
-    {
-        void* socket;
-        file_descriptor fd;
-        short events;
-        short revents;
-    } zmq_pollitem;
-
     typedef std::vector<zmq_pollitem> pollers;
 
-    // These values are protected by mutex.
+    // These values are unprotected.
     bool expired_;
     bool terminated_;
     pollers pollers_;
-    mutable shared_mutex mutex_;
 };
 
 } // namespace zmq

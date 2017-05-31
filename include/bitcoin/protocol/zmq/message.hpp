@@ -19,6 +19,7 @@
 #ifndef LIBBITCOIN_PROTOCOL_ZMQ_MESSAGE_HPP
 #define LIBBITCOIN_PROTOCOL_ZMQ_MESSAGE_HPP
 
+#include <cstddef>
 #include <string>
 #include <google/protobuf/message_lite.h>
 #include <bitcoin/bitcoin.hpp>
@@ -32,15 +33,26 @@ namespace zmq {
 class BCP_API message
 {
 public:
+    /// A zeromq route identifier is always this size.
+    static const size_t address_size = 5;
+
+    /// An identifier for message routing.
+    typedef byte_array<address_size> address;
+
     /// Add an empty message part to the outgoing message.
     void enqueue();
 
-    /// Add an iterable message part to the outgoing message.
-    template <typename Iterable>
-    void enqueue(const Iterable& value)
-    {
-        queue_.emplace(to_chunk(value));
-    }
+    /// Move a data message part to the outgoing message.
+    void enqueue(data_chunk&& value);
+
+    /// Add a data message part to the outgoing message.
+    void enqueue(const data_chunk& value);
+
+    /// Add a text message part to the outgoing message.
+    void enqueue(const std::string& value);
+
+    /// Move an identifier message part to the outgoing message.
+    void enqueue(const address& value);
 
     /// Add a protobuf message part to the outgoing message.
     bool enqueue_protobuf_message(const google::protobuf::MessageLite& value);
@@ -49,20 +61,24 @@ public:
     template <typename Unsigned>
     void enqueue_little_endian(Unsigned value)
     {
-        enqueue(to_little_endian<Unsigned>(value));
+        queue_.emplace(to_chunk(to_little_endian<Unsigned>(value)));
     }
 
     /// Remove a message part from the top of the queue, empty if empty queue.
     data_chunk dequeue_data();
     std::string dequeue_text();
 
-    /// Remove a message part from the top of the queue, false if empty queue.
+    /// Remove a part from the queue top, false if empty queue or invalid.
     bool dequeue();
     bool dequeue(uint32_t& value);
     bool dequeue(data_chunk& value);
     bool dequeue(std::string& value);
     bool dequeue(hash_digest& value);
+<<<<<<< HEAD
     bool dequeue(google::protobuf::MessageLite& value);
+=======
+    bool dequeue(address& value);
+>>>>>>> v3.2.0
 
     /// Clear the queue of message parts.
     void clear();
@@ -81,7 +97,7 @@ public:
     /// Receve a message (clears the queue first).
     code receive(socket& socket);
 
-private:
+protected:
     data_queue queue_;
 };
 
