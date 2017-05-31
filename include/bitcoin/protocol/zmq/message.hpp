@@ -74,11 +74,9 @@ public:
     bool dequeue(data_chunk& value);
     bool dequeue(std::string& value);
     bool dequeue(hash_digest& value);
-<<<<<<< HEAD
     bool dequeue(google::protobuf::MessageLite& value);
-=======
     bool dequeue(address& value);
->>>>>>> v3.2.0
+
 
     /// Clear the queue of message parts.
     void clear();
