@@ -222,6 +222,7 @@ add_library(bitprim-protocol ${MODE}
   src/requester.cpp
   src/requester_simple.cpp
   src/response_packet.cpp
+  src/settings.cpp
   src/zmq/authenticator.cpp
   src/zmq/certificate.cpp
   src/zmq/context.cpp

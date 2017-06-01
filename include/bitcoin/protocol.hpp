@@ -16,17 +16,15 @@
 
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/protocol/define.hpp>
-<<<<<<< HEAD
-#include <bitcoin/protocol/interface.pb.h>
-#include <bitcoin/protocol/packet.hpp>
-#include <bitcoin/protocol/primitives.hpp>
-#include <bitcoin/protocol/replier.hpp>
-#include <bitcoin/protocol/request_packet.hpp>
-#include <bitcoin/protocol/requester.hpp>
-#include <bitcoin/protocol/response_packet.hpp>
-=======
+//OLD MERGE MAY 2017 SHOULD NOT BE NEEDED
+//#include <bitcoin/protocol/interface.pb.h>
+//#include <bitcoin/protocol/packet.hpp>
+//#include <bitcoin/protocol/primitives.hpp>
+//#include <bitcoin/protocol/replier.hpp>
+//#include <bitcoin/protocol/request_packet.hpp>
+//#include <bitcoin/protocol/requester.hpp>
+//#include <bitcoin/protocol/response_packet.hpp>
 #include <bitcoin/protocol/settings.hpp>
->>>>>>> v3.2.0
 #include <bitcoin/protocol/version.hpp>
 #include <bitcoin/protocol/zmq/authenticator.hpp>
 #include <bitcoin/protocol/zmq/certificate.hpp>
