@@ -62,6 +62,12 @@ find_package(ZeroMQ 4.1.1 REQUIRED)
 
 # Require bitprim-core of at least version 3.0.0 and output ${bitprim_core_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
+if (UNIX)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/lib/cmake")
+elseif (WIN32)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "cmake")
+endif()
+
 if (NOT TARGET bitprim-core)
   find_package(bitprim-core 3.0.0 REQUIRED)
 endif()
